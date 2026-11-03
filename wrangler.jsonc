@@ -6,7 +6,7 @@
     {
       "binding": "DB",
       "database_name": "eclipse-onedrive",
-      "database_id": "PASTE_YOUR_DATABASE_ID_HERE",
+      "database_id": "bd931fae-c7aa-4e32-8319-d630e49c5ccc",
       "migrations_dir": "migrations"
     }
   ]

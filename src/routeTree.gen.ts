@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiAddonTokenRouteImport } from './routes/api/addon-token'
 import { Route as ApiMeRouteImport } from './routes/api/me'
+import { Route as AddonTokenManifestDotjsonRouteImport } from './routes/addon/$token/manifest[.]json'
+import { Route as AddonTokenSearchRouteImport } from './routes/addon/$token/search'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthSignupRouteImport } from './routes/api/auth/signup'
@@ -19,6 +21,9 @@ import { Route as ApiOnedriveCallbackRouteImport } from './routes/api/onedrive/c
 import { Route as ApiOnedriveConnectRouteImport } from './routes/api/onedrive/connect'
 import { Route as ApiOnedriveDisconnectRouteImport } from './routes/api/onedrive/disconnect'
 import { Route as ApiOnedriveScanRouteImport } from './routes/api/onedrive/scan'
+import { Route as AddonTokenAlbumIdRouteImport } from './routes/addon/$token/album.$id'
+import { Route as AddonTokenArtistIdRouteImport } from './routes/addon/$token/artist.$id'
+import { Route as AddonTokenStreamIdRouteImport } from './routes/addon/$token/stream.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -33,6 +38,17 @@ const ApiAddonTokenRoute = ApiAddonTokenRouteImport.update({
 const ApiMeRoute = ApiMeRouteImport.update({
   id: '/api/me',
   path: '/api/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AddonTokenManifestDotjsonRoute =
+  AddonTokenManifestDotjsonRouteImport.update({
+    id: '/addon/$token/manifest.json',
+    path: '/addon/$token/manifest.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AddonTokenSearchRoute = AddonTokenSearchRouteImport.update({
+  id: '/addon/$token/search',
+  path: '/addon/$token/search',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
@@ -70,11 +86,28 @@ const ApiOnedriveScanRoute = ApiOnedriveScanRouteImport.update({
   path: '/api/onedrive/scan',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AddonTokenAlbumIdRoute = AddonTokenAlbumIdRouteImport.update({
+  id: '/addon/$token/album/$id',
+  path: '/addon/$token/album/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AddonTokenArtistIdRoute = AddonTokenArtistIdRouteImport.update({
+  id: '/addon/$token/artist/$id',
+  path: '/addon/$token/artist/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AddonTokenStreamIdRoute = AddonTokenStreamIdRouteImport.update({
+  id: '/addon/$token/stream/$id',
+  path: '/addon/$token/stream/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/addon-token': typeof ApiAddonTokenRoute
   '/api/me': typeof ApiMeRoute
+  '/addon/$token/manifest.json': typeof AddonTokenManifestDotjsonRoute
+  '/addon/$token/search': typeof AddonTokenSearchRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/signup': typeof ApiAuthSignupRoute
@@ -82,11 +115,16 @@ export interface FileRoutesByFullPath {
   '/api/onedrive/connect': typeof ApiOnedriveConnectRoute
   '/api/onedrive/disconnect': typeof ApiOnedriveDisconnectRoute
   '/api/onedrive/scan': typeof ApiOnedriveScanRoute
+  '/addon/$token/album/$id': typeof AddonTokenAlbumIdRoute
+  '/addon/$token/artist/$id': typeof AddonTokenArtistIdRoute
+  '/addon/$token/stream/$id': typeof AddonTokenStreamIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/addon-token': typeof ApiAddonTokenRoute
   '/api/me': typeof ApiMeRoute
+  '/addon/$token/manifest.json': typeof AddonTokenManifestDotjsonRoute
+  '/addon/$token/search': typeof AddonTokenSearchRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/signup': typeof ApiAuthSignupRoute
@@ -94,12 +132,17 @@ export interface FileRoutesByTo {
   '/api/onedrive/connect': typeof ApiOnedriveConnectRoute
   '/api/onedrive/disconnect': typeof ApiOnedriveDisconnectRoute
   '/api/onedrive/scan': typeof ApiOnedriveScanRoute
+  '/addon/$token/album/$id': typeof AddonTokenAlbumIdRoute
+  '/addon/$token/artist/$id': typeof AddonTokenArtistIdRoute
+  '/addon/$token/stream/$id': typeof AddonTokenStreamIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/api/addon-token': typeof ApiAddonTokenRoute
   '/api/me': typeof ApiMeRoute
+  '/addon/$token/manifest.json': typeof AddonTokenManifestDotjsonRoute
+  '/addon/$token/search': typeof AddonTokenSearchRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/signup': typeof ApiAuthSignupRoute
@@ -107,6 +150,9 @@ export interface FileRoutesById {
   '/api/onedrive/connect': typeof ApiOnedriveConnectRoute
   '/api/onedrive/disconnect': typeof ApiOnedriveDisconnectRoute
   '/api/onedrive/scan': typeof ApiOnedriveScanRoute
+  '/addon/$token/album/$id': typeof AddonTokenAlbumIdRoute
+  '/addon/$token/artist/$id': typeof AddonTokenArtistIdRoute
+  '/addon/$token/stream/$id': typeof AddonTokenStreamIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -114,6 +160,8 @@ export interface FileRouteTypes {
     | '/'
     | '/api/addon-token'
     | '/api/me'
+    | '/addon/$token/manifest.json'
+    | '/addon/$token/search'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/signup'
@@ -121,11 +169,16 @@ export interface FileRouteTypes {
     | '/api/onedrive/connect'
     | '/api/onedrive/disconnect'
     | '/api/onedrive/scan'
+    | '/addon/$token/album/$id'
+    | '/addon/$token/artist/$id'
+    | '/addon/$token/stream/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/api/addon-token'
     | '/api/me'
+    | '/addon/$token/manifest.json'
+    | '/addon/$token/search'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/signup'
@@ -133,11 +186,16 @@ export interface FileRouteTypes {
     | '/api/onedrive/connect'
     | '/api/onedrive/disconnect'
     | '/api/onedrive/scan'
+    | '/addon/$token/album/$id'
+    | '/addon/$token/artist/$id'
+    | '/addon/$token/stream/$id'
   id:
     | '__root__'
     | '/'
     | '/api/addon-token'
     | '/api/me'
+    | '/addon/$token/manifest.json'
+    | '/addon/$token/search'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/signup'
@@ -145,12 +203,17 @@ export interface FileRouteTypes {
     | '/api/onedrive/connect'
     | '/api/onedrive/disconnect'
     | '/api/onedrive/scan'
+    | '/addon/$token/album/$id'
+    | '/addon/$token/artist/$id'
+    | '/addon/$token/stream/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiAddonTokenRoute: typeof ApiAddonTokenRoute
   ApiMeRoute: typeof ApiMeRoute
+  AddonTokenManifestDotjsonRoute: typeof AddonTokenManifestDotjsonRoute
+  AddonTokenSearchRoute: typeof AddonTokenSearchRoute
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthSignupRoute: typeof ApiAuthSignupRoute
@@ -158,6 +221,9 @@ export interface RootRouteChildren {
   ApiOnedriveConnectRoute: typeof ApiOnedriveConnectRoute
   ApiOnedriveDisconnectRoute: typeof ApiOnedriveDisconnectRoute
   ApiOnedriveScanRoute: typeof ApiOnedriveScanRoute
+  AddonTokenAlbumIdRoute: typeof AddonTokenAlbumIdRoute
+  AddonTokenArtistIdRoute: typeof AddonTokenArtistIdRoute
+  AddonTokenStreamIdRoute: typeof AddonTokenStreamIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -181,6 +247,20 @@ declare module '@tanstack/react-router' {
       path: '/api/me'
       fullPath: '/api/me'
       preLoaderRoute: typeof ApiMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/addon/$token/manifest.json': {
+      id: '/addon/$token/manifest.json'
+      path: '/addon/$token/manifest.json'
+      fullPath: '/addon/$token/manifest.json'
+      preLoaderRoute: typeof AddonTokenManifestDotjsonRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/addon/$token/search': {
+      id: '/addon/$token/search'
+      path: '/addon/$token/search'
+      fullPath: '/addon/$token/search'
+      preLoaderRoute: typeof AddonTokenSearchRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/login': {
@@ -232,6 +312,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiOnedriveScanRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/addon/$token/album/$id': {
+      id: '/addon/$token/album/$id'
+      path: '/addon/$token/album/$id'
+      fullPath: '/addon/$token/album/$id'
+      preLoaderRoute: typeof AddonTokenAlbumIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/addon/$token/artist/$id': {
+      id: '/addon/$token/artist/$id'
+      path: '/addon/$token/artist/$id'
+      fullPath: '/addon/$token/artist/$id'
+      preLoaderRoute: typeof AddonTokenArtistIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/addon/$token/stream/$id': {
+      id: '/addon/$token/stream/$id'
+      path: '/addon/$token/stream/$id'
+      fullPath: '/addon/$token/stream/$id'
+      preLoaderRoute: typeof AddonTokenStreamIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -239,6 +340,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiAddonTokenRoute: ApiAddonTokenRoute,
   ApiMeRoute: ApiMeRoute,
+  AddonTokenManifestDotjsonRoute: AddonTokenManifestDotjsonRoute,
+  AddonTokenSearchRoute: AddonTokenSearchRoute,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthSignupRoute: ApiAuthSignupRoute,
@@ -246,6 +349,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOnedriveConnectRoute: ApiOnedriveConnectRoute,
   ApiOnedriveDisconnectRoute: ApiOnedriveDisconnectRoute,
   ApiOnedriveScanRoute: ApiOnedriveScanRoute,
+  AddonTokenAlbumIdRoute: AddonTokenAlbumIdRoute,
+  AddonTokenArtistIdRoute: AddonTokenArtistIdRoute,
+  AddonTokenStreamIdRoute: AddonTokenStreamIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

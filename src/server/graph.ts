@@ -130,8 +130,20 @@ export async function downloadUrl(env: AppEnv, db: D1, userId: string, itemId: s
     `${GRAPH}/me/drive/items/${encodeURIComponent(itemId)}?$select=id,@microsoft.graph.downloadUrl`,
   );
   const url = item["@microsoft.graph.downloadUrl"];
-  if (!url) throw new HttpError(404, "No download URL for this file");
-  return url;
+  if (url) return url;
+  // Some items omit the annotation. /content supplies the same pre-authenticated
+  // URL in its redirect; never follow it here or download/proxy the audio bytes.
+  const response = await fetch(`${GRAPH}/me/drive/items/${encodeURIComponent(itemId)}/content`, {
+    headers: { Authorization: `Bearer ${token}` },
+    redirect: "manual",
+  });
+  const location = response.headers.get("location");
+  if (response.status === 302 && location) {
+    const target = new URL(location);
+    if (target.protocol === "https:" && !target.username && !target.password) return target.href;
+  }
+  if (response.body) await response.body.cancel();
+  throw new HttpError(response.status === 404 ? 404 : 502, `OneDrive did not provide a download redirect (${response.status})`);
 }
 
 const PAGES_PER_STEP = 5; // keeps each request well under Worker subrequest limits

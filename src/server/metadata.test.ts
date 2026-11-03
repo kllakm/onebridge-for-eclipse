@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readEmbeddedTags, mergeTags, metadataStep, tagFailure } from "./metadata";
-import { RangeTokenizer, TAG_REQUEST_LIMIT, TAG_TIMEOUT_MS } from "./range-tokenizer";
+import { RangeTokenizer, TAG_BYTE_LIMIT, TAG_REQUEST_LIMIT, TAG_TIMEOUT_MS } from "./range-tokenizer";
 import { itemToTrack } from "./library";
 import type { D1, D1Stmt } from "./env";
 
@@ -38,7 +38,51 @@ function id3() {
   return bytes;
 }
 
+function withLargeCover(version: 3 | 4) {
+  const original = id3();
+  const textSize = original[8] * 128 + original[9];
+  const pictureSize = 2 * 1024 * 1024;
+  const tagSize = 10 + pictureSize + textSize;
+  const bytes = new Uint8Array(10 + tagSize + 4096);
+  bytes.set([73, 68, 51, version, 0, 0, (tagSize >>> 21) & 127, (tagSize >>> 14) & 127, (tagSize >>> 7) & 127, tagSize & 127]);
+  bytes.set(new TextEncoder().encode("APIC"), 10);
+  if (version === 3) new DataView(bytes.buffer).setUint32(14, pictureSize);
+  else bytes.set([(pictureSize >>> 21) & 127, (pictureSize >>> 14) & 127, (pictureSize >>> 7) & 127, pictureSize & 127], 14);
+  bytes.set(original.subarray(10, 10 + textSize), 20 + pictureSize);
+  return bytes;
+}
+
 describe("embedded song details", () => {
+  it.each([3, 4] as const)("recovers ID3v2.%i text after a 2 MiB cover without downloading the cover body", async (version) => {
+    const bytes = withLargeCover(version);
+    const mock = serve(bytes);
+    const tags = await readEmbeddedTags("https://media.example.test/song", bytes.length, "large-cover.mp3");
+    expect(tags.common.title).toBe("Tagged Song");
+    expect(tags.common.artist).toBe("Tagged Artist");
+    expect(tags.common.album).toBe("Tagged Album");
+    expect(tags.common.picture).toBeUndefined();
+    const ranges = mock.mock.calls.map(([, init]) => (init.headers as Record<string, string>).Range);
+    expect(ranges).toEqual([`bytes=0-65535`, `bytes=2097152-${bytes.length - 1}`]);
+    expect(mock.mock.calls.length).toBeLessThanOrEqual(8);
+    expect(65536 + bytes.length - 2097152).toBeLessThan(512 * 1024);
+  });
+
+  it("still refuses oversized text frames rather than relaxing the byte cap", async () => {
+    const bytes = withLargeCover(3);
+    bytes.set(new TextEncoder().encode("TIT2"), 10);
+    serve(bytes);
+    await expect(readEmbeddedTags("https://media.example.test/song", bytes.length, "song.mp3")).rejects.toThrow("byte budget");
+    expect(TAG_BYTE_LIMIT).toBe(512 * 1024);
+  });
+
+  it("falls back to ID3v1 when an MP3 has no ID3v2 header", async () => {
+    const bytes = new Uint8Array(4096);
+    bytes.set(new TextEncoder().encode("TAGLegacy Title"), bytes.length - 128);
+    serve(bytes);
+    const tags = await readEmbeddedTags("https://media.example.test/song", bytes.length, "song.mp3");
+    expect(tags.common.title).toBe("Legacy Title");
+  });
+
   it("allows a slow response beyond fifteen seconds but stops at sixty seconds with a safe diagnostic", async () => {
     vi.useFakeTimers();
     const mock = vi.fn((_url: string, init: RequestInit) => new Promise<Response>((_resolve, reject) => {
@@ -118,5 +162,15 @@ describe("embedded song details", () => {
     expect(await metadataStep({}, db, "owner-a")).toMatchObject({ done: true, total: 0 });
     expect(bind.mock.calls).toEqual([["owner-a"], ["owner-a"]]);
     expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining("WHERE user_id=? AND tag_status='pending'"));
+  });
+
+  it("requeues only the owner's unavailable files, without resetting completed files", async () => {
+    const bind = vi.fn();
+    const stmt: D1Stmt = { bind, all: vi.fn().mockResolvedValue({ results: [] }), first: vi.fn().mockResolvedValue({ total: 0, processed: 0 }), run: vi.fn().mockResolvedValue({}) };
+    bind.mockReturnValue(stmt);
+    const db: D1 = { prepare: vi.fn().mockReturnValue(stmt), batch: vi.fn() };
+    await metadataStep({}, db, "owner-a", false, true);
+    expect(db.prepare).toHaveBeenCalledWith("UPDATE music_files SET tag_status='pending' WHERE user_id=? AND tag_status='unavailable'");
+    expect(bind.mock.calls).toEqual([["owner-a"], ["owner-a"], ["owner-a"]]);
   });
 });

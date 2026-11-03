@@ -19,4 +19,4 @@
 - Microsoft OAuth failures expose only allowlisted diagnostic identifiers after state validation, never raw callback descriptions; this enables troubleshooting without leaking account details.
 - Embedded tags use bounded range reads and music-metadata decoding; ordinary MP3 text frames are compacted before decoding to skip artwork bodies, with bounded fallback for unsupported ID3 layouts. Three concurrent files share a request-local owner token to avoid redundant refreshes and stay within Worker limits; audio playback remains direct-file.
 - Signup availability must be enforced at the server endpoint, not just hidden in the UI, so direct requests cannot bypass testing access restrictions.
-- Shared branding uses an absolute hosted asset address for external Worker deployments; favicons remain local public files so browser fallback requests use the same brand.
+- Displayed images and favicons live in public files and use same-origin paths so standalone Worker deployments have no Lovable asset-service dependency.

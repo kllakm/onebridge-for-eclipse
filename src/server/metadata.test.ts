@@ -40,7 +40,7 @@ function id3() {
 
 function withLargeCover(version: 3 | 4) {
   const original = id3();
-  const textSize = original[8] * 128 + original[9];
+  const textSize = (original[8] ?? 0) * 128 + (original[9] ?? 0);
   const pictureSize = 2 * 1024 * 1024;
   const tagSize = 10 + pictureSize + textSize;
   const bytes = new Uint8Array(10 + tagSize + 4096);
@@ -61,7 +61,7 @@ describe("embedded song details", () => {
     expect(tags.common.artist).toBe("Tagged Artist");
     expect(tags.common.album).toBe("Tagged Album");
     expect(tags.common.picture).toBeUndefined();
-    const ranges = mock.mock.calls.map(([, init]) => (init.headers as Record<string, string>).Range);
+    const ranges = mock.mock.calls.map(([, init]) => (init.headers as Record<string, string>)["Range"]);
     expect(ranges).toEqual([`bytes=0-65535`, `bytes=2097152-${bytes.length - 1}`]);
     expect(mock.mock.calls.length).toBeLessThanOrEqual(8);
     expect(65536 + bytes.length - 2097152).toBeLessThan(512 * 1024);
@@ -77,6 +77,10 @@ describe("embedded song details", () => {
 
   it("falls back to ID3v1 when an MP3 has no ID3v2 header", async () => {
     const bytes = new Uint8Array(4096);
+    // A real MPEG frame ensures the existing parser reaches its post-header pass.
+    bytes.set([0xff, 0xfb, 0x90, 0x00]);
+    bytes.set([0xff, 0xfb, 0x90, 0x00], 417);
+    bytes.set([0xff, 0xfb, 0x90, 0x00], 834);
     bytes.set(new TextEncoder().encode("TAGLegacy Title"), bytes.length - 128);
     serve(bytes);
     const tags = await readEmbeddedTags("https://media.example.test/song", bytes.length, "song.mp3");

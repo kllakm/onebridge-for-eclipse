@@ -29,11 +29,12 @@ export async function readSelectiveMp3Tags(reader: RangeTokenizer): Promise<IAud
   if (reader.fileInfo.size < 10) return null;
   const header = await readAt(reader, 0, 10);
   const version = header[3];
-  if (decoder.decode(header.subarray(0, 3)) !== "ID3" || (version !== 3 && version !== 4) || (header[5] & 0x80)) return null;
+  const flags = header[5] ?? 0;
+  if (decoder.decode(header.subarray(0, 3)) !== "ID3" || (version !== 3 && version !== 4) || (flags & 0x80)) return null;
   const end = 10 + syncSafe(header, 6);
   if (end > reader.fileInfo.size) throw new Error("Invalid ID3 boundary");
   let position = 10;
-  if (header[5] & 0x40) {
+  if (flags & 0x40) {
     const extension = await readAt(reader, position, 4);
     const length = version === 4 ? syncSafe(extension, 0) : uint32(extension, 0) + 4;
     if (length < (version === 4 ? 6 : 10) || position + length > end) throw new Error("Invalid ID3 extended header");

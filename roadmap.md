@@ -4,4 +4,5 @@
 - [x] Test tag extraction and owner isolation; document deployment and retesting.
 - [x] Add safe diagnostics and pause metadata reading on failure.
 - [x] Handle bounded Microsoft media redirects and separate download error diagnostics.
-- [ ] Resolve deployed metadata failure — waiting for a one-file retest after redirect handling deploys.
+- [x] Extend the bounded tag-read wait and distinguish header/body timeouts; test cancellation.
+- [ ] Resolve deployed metadata failure — waiting for a one-file retest with the 60-second limit.

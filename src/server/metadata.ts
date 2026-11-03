@@ -1,5 +1,5 @@
 import { parseFromTokenizer, type IAudioMetadata } from "music-metadata";
-import { RangeTokenizer, TagDownloadError } from "./range-tokenizer";
+import { RangeTokenizer, TagDownloadError, TAG_TIMEOUT_MS } from "./range-tokenizer";
 import { keyOf, type TrackRow } from "./library";
 import type { AppEnv, D1 } from "./env";
 import { downloadUrl } from "./graph";
@@ -37,7 +37,7 @@ export function mergeTags(row: TrackRow, metadata: IAudioMetadata): TrackRow {
 
 export async function readEmbeddedTags(url: string, size: number, name: string) {
   const tokenizer = new RangeTokenizer(url, size, name);
-  const timeout = setTimeout(() => { void tokenizer.close(); }, 15_000);
+  const timeout = setTimeout(() => { void tokenizer.close(); }, TAG_TIMEOUT_MS);
   try {
     return await parseFromTokenizer(tokenizer, { skipCovers: true, duration: false });
   } finally {

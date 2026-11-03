@@ -2,6 +2,7 @@ import { AbstractTokenizer, EndOfStreamError, type IReadChunkOptions } from "str
 
 export const TAG_BYTE_LIMIT = 512 * 1024;
 export const TAG_REQUEST_LIMIT = 8;
+export const TAG_TIMEOUT_MS = 60_000;
 const CHUNK_SIZE = 64 * 1024;
 
 export class TagDownloadError extends Error {}
@@ -79,7 +80,7 @@ export class RangeTokenizer extends AbstractTokenizer {
           signal: this.controller.signal,
         });
       } catch {
-        throw new TagDownloadError(this.controller.signal.aborted ? "Music download timed out" : "Music host connection failed before returning a response");
+        throw new TagDownloadError(this.controller.signal.aborted ? "Music download timed out waiting for response headers" : "Music host connection failed before returning a response");
       }
       if (![301, 302, 303, 307, 308].includes(response.status)) break;
       const location = response.headers.get("location");
@@ -105,6 +106,9 @@ export class RangeTokenizer extends AbstractTokenizer {
         result.set(value, received);
         received += value.length;
       }
+    } catch (error) {
+      if (this.controller.signal.aborted) throw new TagDownloadError("Music download timed out reading the requested file section");
+      throw error;
     } finally {
       await reader.cancel();
       reader.releaseLock();

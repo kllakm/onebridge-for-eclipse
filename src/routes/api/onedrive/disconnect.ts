@@ -13,7 +13,9 @@ export const Route = createFileRoute("/api/onedrive/disconnect")({
           const user = await requireUser(db, request);
           await db.batch([
             db.prepare("DELETE FROM microsoft_connections WHERE user_id=?").bind(user.id),
-            db.prepare("DELETE FROM music_files WHERE user_id=?").bind(user.id),
+            db.prepare("DELETE FROM music_tracks WHERE user_id=?").bind(user.id),
+            db.prepare("DELETE FROM library_albums WHERE user_id=?").bind(user.id),
+            db.prepare("DELETE FROM library_artists WHERE user_id=?").bind(user.id),
             db.prepare("DELETE FROM sync_state WHERE user_id=?").bind(user.id),
             db.prepare("DELETE FROM addon_tokens WHERE user_id=?").bind(user.id),
           ]);

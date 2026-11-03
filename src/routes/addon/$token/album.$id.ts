@@ -11,9 +11,9 @@ export const Route = createFileRoute("/addon/$token/album/$id")({
         addonHandler(params.token, async ({ db, userId }) => {
           const rows = await db
             .prepare(
-              "SELECT item_id, title, artist, album, album_artist, duration, ext, year FROM music_files WHERE user_id=? AND album_key=? ORDER BY disc_no, track_no, title",
+              "SELECT item_id, title, artist, album, album_artist, duration, ext, year FROM music_files WHERE user_id=? AND item_id IN (SELECT item_id FROM music_tracks WHERE user_id=? AND album_id IN (SELECT id FROM library_albums WHERE user_id=? AND album_key=?)) ORDER BY disc_no, track_no, title",
             )
-            .bind(userId, params.id)
+            .bind(userId, userId, userId, params.id)
             .all<{ item_id: string; title: string; artist: string; album: string; album_artist: string; duration: number | null; ext: string; year: number | null }>();
           const first = rows.results[0];
           if (!first) return json({ error: "Album not found" }, 404);

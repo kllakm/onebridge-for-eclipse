@@ -12,7 +12,13 @@
 - [x] Verify tests and simulated dashboard flow; document external OneDrive speed checks still required.
 - [x] Implement small safe D1 storage savings without a schema overhaul; migration and unmeasured deployed size documented.
 - [x] Move displayed logo and donation SVGs to public files for independent Cloudflare hosting; verify images.
-- [ ] Apply storage migration and measure deployed scan speed/size — requires owner's Cloudflare access and deployment.
+- [ ] Apply latest storage migration and measure deployed scan speed/size — requires owner's Cloudflare access and deployment.
+
+# Compact shared library
+- [x] Replace repeated artist/album names with owner-scoped shared records and compact integer references; reset only music index.
+- [x] Update scan, metadata writes and cleanup while preserving Eclipse read responses and stable IDs.
+- [x] Test actual SQLite read/write flows, ownership, reset, deduplication and representative size; document migration/rescan steps.
+- [x] Answer TorBox database-storage feasibility as research only; no TorBox implementation changes.
 
 # OneBridge testing update
 - [x] Move main-page donation section directly beneath login; verified visible without desktop scrolling.

@@ -143,6 +143,8 @@ Worker → **Settings → Domains & Routes → Add → Custom domain**. Then upd
 
 ## Faster tag reading and small storage update (existing installation)
 
+**Superseded for compact shared storage:** use the next section when applying `0004_compact_library.sql`. Do not resume scanning between 0003 and 0004 with the latest code.
+
 1. Wait for Cloudflare's latest automatic deployment to show **Success**, then refresh your app. Images now come from `/images/` on your own Worker; no Lovable image address is required.
 2. Click **Check one failed file** to test the improved MP3 reader. If that succeeds, click **Retry failed files** to requeue the earlier failures and continue unchecked tracks. Completed tags are retained; no full rescan or replacement addon link is needed. Unsupported tag layouts can still reach the safety limits.
 3. For the small storage changes, first create a recovery point/export using your D1 database's available **Time Travel** or **Export** controls, and record the current reported database size. Pause scanning/tag reading while applying the change.
@@ -151,3 +153,23 @@ Worker → **Settings → Domains & Routes → Add → Custom domain**. Then upd
 6. Compare D1's reported size after the change. SQLite can reuse freed pages without immediately reporting a smaller file; a large or immediate reduction is not guaranteed. Do not delete songs or run a database rebuild just to force a smaller number.
 
 No Microsoft permissions, secrets, existing account, addon link or database table layout changes are required. New signups remain closed during testing; use your existing account.
+
+## Compact shared artist/album storage — reset and rescan
+
+This is the current required upgrade for the latest app code. It stores artist and album names once per user and uses small numeric references on songs. It resets **all indexed music and saved scan progress in this testing database**, not accounts, passwords, Microsoft connections, addon links or any OneDrive files. Eclipse search/playback will be unavailable while the index is empty or rebuilding.
+
+1. Stop any scan/tag pass by refreshing the app, then close the app tab and stop Eclipse playback. Keep them closed while changing the database.
+2. Open **Cloudflare → D1 → eclipse-onedrive**. Record the current database size and save an export or available Time Travel recovery point before proceeding. Do not delete the database: it contains your existing account and encrypted connection.
+3. Wait for the latest Worker deployment to show **Success**. The latest scan/tag code requires the compact schema, so do not run it against the old tables.
+4. Open **D1 → Console**. Migrations `0001_init.sql` and `0002_metadata.sql` must already be applied. If `0003_small_storage.sql` has not been applied, execute its statements in order first. Do not run 0001/0002 again.
+5. In GitHub open **migrations/0004_compact_library.sql → Raw**. Execute each complete SQL statement in order. For every `CREATE TRIGGER`, paste the **entire block from CREATE TRIGGER through END; as one submission**—the semicolons inside are part of that block. Do not paste individual trigger-body lines. The first two statements clear the old music index and scan cursor intentionally.
+6. Verify the tables **music_tracks**, **library_artists**, **library_albums** exist. `music_files` is now a view, not a stored table. Run:
+   ```sql
+   SELECT name, type FROM sqlite_master WHERE name IN ('music_tracks','library_artists','library_albums','music_files','music_files_insert','music_files_update','music_files_delete');
+   ```
+   Expected: three tables, one view, three triggers. If a statement fails, stop and send the error; do not restart the migration from its destructive first line or continue scanning with a partial setup.
+7. Reopen your app and sign in with your existing account. It should show zero tracks and remain connected to OneDrive. Click **Scan library**, then **Read song details**. Keep the page open. You do not need a new addon link or Microsoft credentials.
+8. In Eclipse, search a tagged song, open its album and artist, and play it. Saved tracks keep the same OneDrive IDs, but cannot resolve until indexed again. Report any search/album/artist/playback issue before sharing access.
+9. After tag reading completes, record D1's size again. Shared-name cleanup runs when scan/tag passes finish. SQLite may retain freed pages for reuse; a lower reported physical file size is not guaranteed. Do not recreate the whole database or run unsupported compaction commands.
+
+The migration has not been applied to your Cloudflare database from this chat. A synthetic local comparison showed a smaller layout; actual savings depend on your library and remain to be measured. Existing partial-update and reset tests verify isolation and stable Eclipse track responses, not the deployed Eclipse session.

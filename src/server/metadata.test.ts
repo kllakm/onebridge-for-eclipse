@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { readEmbeddedTags, mergeTags, metadataStep } from "./metadata";
+import { readEmbeddedTags, mergeTags, metadataStep, tagFailure } from "./metadata";
 import { RangeTokenizer, TAG_REQUEST_LIMIT } from "./range-tokenizer";
 import { itemToTrack } from "./library";
 import type { D1, D1Stmt } from "./env";
@@ -39,6 +39,10 @@ function id3() {
 }
 
 describe("embedded song details", () => {
+  it("never exposes signed URLs or arbitrary parser messages in diagnostics", () => {
+    expect(tagFailure(new Error("fetch failed https://private.test/?token=secret"))).toBe("Music download request failed or redirected");
+    expect(tagFailure(new Error("unexpected private account data"))).toBe("Tag parser could not read this file");
+  });
   it("reads real ID3 frames and replaces filename fallbacks", async () => {
     const bytes = id3();
     serve(bytes);

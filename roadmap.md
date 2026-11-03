@@ -18,7 +18,7 @@
 - [ ] Replace repeated artist/album names with owner-scoped shared records and compact integer references; reset only music index.
 - [ ] Update scan, metadata writes and cleanup while preserving Eclipse read responses and stable IDs.
 - [ ] Test actual SQLite read/write flows, ownership, reset, deduplication and representative size; document migration/rescan steps.
-- [ ] Answer TorBox database-storage feasibility as research only; no TorBox implementation changes.
+- [x] Answer TorBox database-storage feasibility as research only; no TorBox implementation changes.
 
 # OneBridge testing update
 - [x] Move main-page donation section directly beneath login; verified visible without desktop scrolling.

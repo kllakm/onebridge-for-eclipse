@@ -101,7 +101,7 @@ describe("compact shared library", () => {
     expect(search.results).toEqual([{id:"al-various-artists|compilation",title:"Compilation",artist:"Various Artists",trackCount:2}]);
     expect(await db.prepare("SELECT item_id FROM music_files WHERE user_id=? AND artist_key=?").bind("a","ar-featured-artist").first()).toEqual({item_id:"one"});
     expect(await db.prepare("SELECT ext FROM music_files WHERE user_id=? AND item_id=?").bind("a","one").first()).toEqual({ext:"mp3"});
-    const plan=await db.prepare("EXPLAIN QUERY PLAN SELECT * FROM music_files WHERE user_id=? AND album_key=?").bind("a","al-various-artists|compilation").all();
+    const plan=await db.prepare("EXPLAIN QUERY PLAN SELECT * FROM music_files WHERE user_id=? AND item_id IN (SELECT item_id FROM music_tracks WHERE user_id=? AND album_id IN (SELECT id FROM library_albums WHERE user_id=? AND album_key=?))").bind("a","a","a","al-various-artists|compilation").all();
     expect(JSON.stringify(plan.results)).toContain("compact_music_album");
     const counts=await db.prepare("SELECT COUNT(DISTINCT artist_key) AS artists,COUNT(DISTINCT album_key) AS albums FROM music_files WHERE user_id=?").bind("a").first();
     expect(counts).toEqual({artists:2,albums:1});

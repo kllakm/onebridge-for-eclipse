@@ -165,8 +165,8 @@ describe("embedded song details", () => {
     bind.mockReturnValue(stmt);
     const db: D1 = { prepare: vi.fn().mockReturnValue(stmt), batch: vi.fn() };
     expect(await metadataStep({}, db, "owner-a")).toMatchObject({ done: true, total: 0 });
-    expect(bind.mock.calls).toEqual([["owner-a"], ["owner-a"]]);
-    expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining("WHERE user_id=? AND tag_status='pending'"));
+    expect(bind.mock.calls).toEqual([["owner-a", "owner-a"], ["owner-a"]]);
+    expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining("WHERE user_id=? AND tag_status=0"));
   });
 
   it("requeues only the owner's unavailable files, without resetting completed files", async () => {
@@ -175,8 +175,8 @@ describe("embedded song details", () => {
     bind.mockReturnValue(stmt);
     const db: D1 = { prepare: vi.fn().mockReturnValue(stmt), batch: vi.fn() };
     await metadataStep({}, db, "owner-a", false, true);
-    expect(db.prepare).toHaveBeenCalledWith("UPDATE music_files SET tag_status='pending' WHERE user_id=? AND tag_status='unavailable'");
-    expect(bind.mock.calls).toEqual([["owner-a"], ["owner-a"], ["owner-a"]]);
+    expect(db.prepare).toHaveBeenCalledWith("UPDATE music_tracks SET tag_status=0 WHERE user_id=? AND tag_status=2");
+    expect(bind.mock.calls).toEqual([["owner-a"], ["owner-a", "owner-a"], ["owner-a"]]);
   });
 
   it("reads three owner tracks concurrently with one connection lookup and writes recovered tags", async () => {

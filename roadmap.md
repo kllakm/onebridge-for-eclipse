@@ -1,3 +1,9 @@
+# Public GitHub release preparation
+- [ ] Add complete PolyForm Noncommercial text, explicit supplemental restrictions and attribution terms.
+- [ ] Update README for community self-hosting, licensing and required credentials.
+- [ ] Add persistent creator attribution and entry-file copyright notices without changing existing functionality.
+- [ ] Add safe environment examples, exclude local secrets, audit current source and verify the UI.
+
 # Missing music metadata
 - [x] Replace per-batch full-library progress counts with transactional owner counters; test retries, deletion and isolation.
 - [x] Surface dashboard load failures and document safe incomplete-migration diagnosis.

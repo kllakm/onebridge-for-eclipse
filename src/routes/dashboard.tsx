@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Brand } from "@/components/Brand";
 import { SetupNotice } from "@/components/SetupNotice";
+import { SupportCoffee } from "@/components/SupportCoffee";
 import { api, type MeResponse } from "@/lib/api";
 
 export const Route = createFileRoute("/dashboard")({
@@ -273,6 +274,8 @@ function Dashboard() {
           </ol>
         </section>
       )}
+
+      <SupportCoffee className="mt-12 -mx-6" />
     </main>
   );
 }

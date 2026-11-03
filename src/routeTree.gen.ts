@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ApiAddonTokenRouteImport } from './routes/api/addon-token'
 import { Route as ApiMeRouteImport } from './routes/api/me'
 import { Route as AddonTokenManifestDotjsonRouteImport } from './routes/addon/$token/manifest[.]json'
@@ -28,6 +29,11 @@ import { Route as AddonTokenStreamIdRouteImport } from './routes/addon/$token/st
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAddonTokenRoute = ApiAddonTokenRouteImport.update({
@@ -104,6 +110,7 @@ const AddonTokenStreamIdRoute = AddonTokenStreamIdRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/api/addon-token': typeof ApiAddonTokenRoute
   '/api/me': typeof ApiMeRoute
   '/addon/$token/manifest.json': typeof AddonTokenManifestDotjsonRoute
@@ -121,6 +128,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/api/addon-token': typeof ApiAddonTokenRoute
   '/api/me': typeof ApiMeRoute
   '/addon/$token/manifest.json': typeof AddonTokenManifestDotjsonRoute
@@ -139,6 +147,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/dashboard': typeof DashboardRoute
   '/api/addon-token': typeof ApiAddonTokenRoute
   '/api/me': typeof ApiMeRoute
   '/addon/$token/manifest.json': typeof AddonTokenManifestDotjsonRoute
@@ -158,6 +167,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/dashboard'
     | '/api/addon-token'
     | '/api/me'
     | '/addon/$token/manifest.json'
@@ -175,6 +185,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/dashboard'
     | '/api/addon-token'
     | '/api/me'
     | '/addon/$token/manifest.json'
@@ -192,6 +203,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/dashboard'
     | '/api/addon-token'
     | '/api/me'
     | '/addon/$token/manifest.json'
@@ -210,6 +222,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  DashboardRoute: typeof DashboardRoute
   ApiAddonTokenRoute: typeof ApiAddonTokenRoute
   ApiMeRoute: typeof ApiMeRoute
   AddonTokenManifestDotjsonRoute: typeof AddonTokenManifestDotjsonRoute
@@ -233,6 +246,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/addon-token': {
@@ -338,6 +358,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  DashboardRoute: DashboardRoute,
   ApiAddonTokenRoute: ApiAddonTokenRoute,
   ApiMeRoute: ApiMeRoute,
   AddonTokenManifestDotjsonRoute: AddonTokenManifestDotjsonRoute,

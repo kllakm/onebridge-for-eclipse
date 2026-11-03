@@ -171,7 +171,9 @@ export async function scanStep(env: AppEnv, db: D1, userId: string, opts: { full
   let state = await db.prepare("SELECT delta_link, next_link FROM sync_state WHERE user_id=?").bind(userId).first<{ delta_link: string | null; next_link: string | null }>();
   if (opts.full) {
     await db.batch([
-      db.prepare("DELETE FROM music_files WHERE user_id=?").bind(userId),
+      db.prepare("DELETE FROM music_tracks WHERE user_id=?").bind(userId),
+      db.prepare("DELETE FROM library_albums WHERE user_id=?").bind(userId),
+      db.prepare("DELETE FROM library_artists WHERE user_id=?").bind(userId),
       db.prepare("DELETE FROM sync_state WHERE user_id=?").bind(userId),
     ]);
     state = null;

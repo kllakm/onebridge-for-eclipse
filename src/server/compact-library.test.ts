@@ -88,6 +88,25 @@ describe("compact shared library", () => {
     expect(await db.prepare("SELECT COUNT(*) AS n FROM music_files WHERE user_id=?").bind("b").first()).toEqual({ n:1 });
   });
 
+  it("keeps compilation album artists distinct and supports Eclipse album, artist, search and stream queries", async () => {
+    const {db}=database();
+    const first={...row("one","Featured Artist","Compilation"),album_artist:"Various Artists",album_key:"al-various-artists|compilation"};
+    const second={...row("two","Other Artist","Compilation"),album_artist:"Various Artists",album_key:"al-various-artists|compilation"};
+    await db.batch([insert(db,"a",first),insert(db,"a",second),insert(db,"b",row("private","Private Artist","Compilation"))]);
+    const album=await db.prepare("SELECT item_id,title,artist,album,album_artist,duration,ext,year FROM music_files WHERE user_id=? AND album_key=? ORDER BY disc_no,track_no,title").bind("a","al-various-artists|compilation").all<TrackRow>();
+    expect(album.results).toHaveLength(2);
+    expect(album.results.map(t=>t.album_artist)).toEqual(["Various Artists","Various Artists"]);
+    expect(album.results.map(eclipseTrack).map(t=>t.artist)).toEqual(["Featured Artist","Other Artist"]);
+    const search=await db.prepare("SELECT album_key AS id,album AS title,MAX(album_artist) AS artist,COUNT(*) AS trackCount FROM music_files WHERE user_id=? AND album LIKE ? GROUP BY album_key").bind("a","%Compilation%").all();
+    expect(search.results).toEqual([{id:"al-various-artists|compilation",title:"Compilation",artist:"Various Artists",trackCount:2}]);
+    expect(await db.prepare("SELECT item_id FROM music_files WHERE user_id=? AND artist_key=?").bind("a","ar-featured-artist").first()).toEqual({item_id:"one"});
+    expect(await db.prepare("SELECT ext FROM music_files WHERE user_id=? AND item_id=?").bind("a","one").first()).toEqual({ext:"mp3"});
+    const plan=await db.prepare("EXPLAIN QUERY PLAN SELECT * FROM music_files WHERE user_id=? AND album_key=?").bind("a","al-various-artists|compilation").all();
+    expect(JSON.stringify(plan.results)).toContain("compact_music_album");
+    const counts=await db.prepare("SELECT COUNT(DISTINCT artist_key) AS artists,COUNT(DISTINCT album_key) AS albums FROM music_files WHERE user_id=?").bind("a").first();
+    expect(counts).toEqual({artists:2,albums:1});
+  });
+
   it("resets only the old music index and sync cursor during migration, retaining accounts and connection links", async () => {
     const { db,script } = database(false);
     await insert(db,"a",row()).run();

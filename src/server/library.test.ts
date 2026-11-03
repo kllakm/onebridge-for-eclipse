@@ -3,6 +3,13 @@ import { itemToTrack, streamHints } from "./library";
 import { decryptString, encryptString, hashPassword, sha256Hex, verifyPassword } from "./crypto";
 
 describe("library indexing", () => {
+  it("does not duplicate unused OneDrive folder paths or MIME strings in stored track rows", () => {
+    const row = itemToTrack({ id: "one", name: "Artist - Song.mp3", file: { mimeType: "audio/mpeg" }, parentReference: { path: "/drive/root:/Music/Artist/Album" } });
+    expect(row?.path).toBeNull();
+    expect(row?.mime).toBeNull();
+    expect(row?.ext).toBe("mp3");
+    expect(row?.title).toBe("Song");
+  });
   it("ignores non-audio files like photos and documents", () => {
     expect(itemToTrack({ id: "1", name: "holiday.jpg", file: {} })).toBeNull();
     expect(itemToTrack({ id: "2", name: "notes.docx", file: {} })).toBeNull();

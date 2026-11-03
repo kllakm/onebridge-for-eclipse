@@ -8,7 +8,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 function serve(bytes: Uint8Array) {
   const mock = vi.fn(async (_url: string, init: RequestInit) => {
-    const range = (init.headers as Record<string, string>).Range;
+    const range = (init.headers as Record<string, string>)["Range"] ?? "";
     const match = /bytes=(\d+)-(\d+)/.exec(range);
     if (!match) throw new Error("Range required");
     const start = Number(match[1]);

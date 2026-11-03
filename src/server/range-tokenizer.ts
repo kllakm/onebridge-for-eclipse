@@ -88,7 +88,7 @@ export class RangeTokenizer extends AbstractTokenizer {
     return result;
   }
 
-  async close() {
+  override async close() {
     this.controller.abort();
     this.chunks.clear();
     await super.close();

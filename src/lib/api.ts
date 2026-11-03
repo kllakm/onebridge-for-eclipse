@@ -2,8 +2,8 @@
 export async function api<T = unknown>(path: string, init?: RequestInit & { body?: string }): Promise<T> {
   const res = await fetch(path, {
     credentials: "same-origin",
-    headers: init?.body ? { "content-type": "application/json" } : undefined,
     ...init,
+    headers: init?.body ? { "content-type": "application/json" } : {},
   });
   const data = (await res.json().catch(() => ({}))) as T & { error?: string };
   if (!res.ok) throw new Error(data.error ?? `Request failed (${res.status})`);

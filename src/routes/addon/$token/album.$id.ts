@@ -15,8 +15,8 @@ export const Route = createFileRoute("/addon/$token/album/$id")({
             )
             .bind(userId, params.id)
             .all<{ item_id: string; title: string; artist: string; album: string; album_artist: string; duration: number | null; ext: string; year: number | null }>();
-          if (!rows.results.length) return json({ error: "Album not found" }, 404);
           const first = rows.results[0];
+          if (!first) return json({ error: "Album not found" }, 404);
           return json({
             id: params.id,
             title: first.album,

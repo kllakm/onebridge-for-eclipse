@@ -25,7 +25,7 @@ describe("library indexing", () => {
   });
 
   it("does not claim a codec for m4a, which may be AAC or ALAC", () => {
-    expect(streamHints("m4a").codec).toBeUndefined();
+    expect(streamHints("m4a")["codec"]).toBeUndefined();
   });
 });
 

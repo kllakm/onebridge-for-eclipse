@@ -73,7 +73,7 @@ export async function encryptString(plain: string, secretB64: string): Promise<s
 }
 
 export async function decryptString(stored: string, secretB64: string): Promise<string> {
-  const [iv, ct] = stored.split(".");
+  const [iv = "", ct = ""] = stored.split(".");
   const pt = await crypto.subtle.decrypt(
     { name: "AES-GCM", iv: fromB64(iv) as BufferSource },
     await aesKey(secretB64),

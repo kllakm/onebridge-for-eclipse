@@ -66,8 +66,8 @@ export function itemToTrack(item: DriveItem): TrackRow | null {
   const base = item.name.slice(0, item.name.length - ext.length - 1);
   // Filename fallback "Artist - Title" only when tags are missing.
   const dash = base.split(" - ");
-  const title = a.title?.trim() || (dash.length > 1 ? dash.slice(1).join(" - ") : base);
-  const artist = a.artist?.trim() || (dash.length > 1 ? dash[0] : "Unknown Artist");
+  const title: string = a.title?.trim() || (dash.length > 1 ? dash.slice(1).join(" - ") : base);
+  const artist: string = a.artist?.trim() || (dash.length > 1 ? (dash[0] ?? "") : "") || "Unknown Artist";
   const albumArtist = a.albumArtist?.trim() || artist;
   const album = a.album?.trim() || "Unknown Album";
   return {

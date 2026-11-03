@@ -9,6 +9,7 @@ import { pruneLibrary } from "./compact-library";
 import { scanStep } from "./graph";
 import { metadataStep } from "./metadata";
 import { encryptString } from "./crypto";
+import { libraryProgress } from "./library-progress";
 
 const dirs: string[] = [];
 afterEach(() => { for (const dir of dirs.splice(0)) rmSync(dir, { recursive: true, force: true }); vi.unstubAllGlobals(); });
@@ -21,7 +22,10 @@ function database(compact = true) {
   const script = (sql: string) => execute({ script: sql });
   for (const name of ["0001_init.sql", "0002_metadata.sql", "0003_small_storage.sql"]) script(readFileSync(`migrations/${name}`, "utf8"));
   script("INSERT INTO users(id,email,password_hash,created_at) VALUES('a','a@example.test','unused',0),('b','b@example.test','unused',0);");
-  if (compact) script(readFileSync("migrations/0004_compact_library.sql", "utf8"));
+  if (compact) {
+    script(readFileSync("migrations/0004_compact_library.sql", "utf8"));
+    script(readFileSync("migrations/0005_library_progress.sql", "utf8"));
+  }
   const db: D1 = {
     prepare: (sql: string) => {
       let values: unknown[] = [];
@@ -51,6 +55,41 @@ function insert(db: D1, owner: string, t: TrackRow) {
 }
 
 describe("compact shared library", () => {
+  it("maintains exact owner progress through insert, upsert, retry, failure, deletion and reset", async () => {
+    const { db } = database();
+    await db.batch([insert(db,"a",row("one")),insert(db,"a",row("two")),insert(db,"b",row("private"))]);
+    expect(await libraryProgress(db,"a")).toEqual({ total:2,tagged:0,unavailable:0,processed:0,done:false });
+    await db.prepare("UPDATE music_tracks SET tag_status=1 WHERE user_id=? AND item_id=?").bind("a","one").run();
+    await db.prepare("UPDATE music_tracks SET tag_status=2 WHERE user_id=? AND item_id=?").bind("a","two").run();
+    expect(await libraryProgress(db,"a")).toEqual({ total:2,tagged:1,unavailable:1,processed:2,done:true });
+    await db.prepare("UPDATE music_tracks SET tag_status=0 WHERE user_id=? AND tag_status=2").bind("a").run();
+    expect(await libraryProgress(db,"a")).toMatchObject({ total:2,tagged:1,unavailable:0,processed:1,done:false });
+    await insert(db,"a",row("one")).run();
+    expect(await libraryProgress(db,"a")).toMatchObject({ total:2,tagged:0,processed:0 });
+    await db.prepare("UPDATE music_tracks SET tag_status=1 WHERE user_id=?").bind("a").run();
+    await db.prepare("UPDATE music_tracks SET tag_status=1 WHERE user_id=?").bind("a").run();
+    expect(await libraryProgress(db,"a")).toMatchObject({ total:2,tagged:2 });
+    await db.prepare("DELETE FROM music_tracks WHERE user_id=? AND item_id=?").bind("a","one").run();
+    expect(await libraryProgress(db,"a")).toMatchObject({ total:1,tagged:1,done:true });
+    await db.prepare("DELETE FROM music_tracks WHERE user_id=?").bind("a").run();
+    expect(await libraryProgress(db,"a")).toEqual({ total:0,tagged:0,unavailable:0,processed:0,done:true });
+    expect(await libraryProgress(db,"b")).toEqual({ total:1,tagged:0,unavailable:0,processed:0,done:false });
+  });
+
+  it("backfills existing tracks without deleting them and can safely repeat the counter migration", async () => {
+    const { db, script } = database();
+    await db.batch([insert(db,"a",row("one")),insert(db,"a",row("two"))]);
+    await db.prepare("UPDATE music_tracks SET tag_status=1 WHERE user_id=? AND item_id=?").bind("a","one").run();
+    script("DROP TRIGGER library_progress_insert; DROP TRIGGER library_progress_update; DROP TRIGGER library_progress_delete; DROP TABLE library_progress;");
+    script(readFileSync("migrations/0005_library_progress.sql","utf8"));
+    script(readFileSync("migrations/0005_library_progress.sql","utf8"));
+    expect(await libraryProgress(db,"a")).toEqual({ total:2,tagged:1,unavailable:0,processed:1,done:false });
+    await db.prepare("UPDATE music_tracks SET tag_status=2 WHERE user_id=? AND item_id=?").bind("a","two").run();
+    expect(await libraryProgress(db,"a")).toMatchObject({ total:2,tagged:1,unavailable:1,done:true });
+    const plan=await db.prepare("EXPLAIN QUERY PLAN SELECT total,tagged,unavailable FROM library_progress WHERE user_id=?").bind("a").all();
+    expect(JSON.stringify(plan.results)).toContain("SEARCH library_progress USING PRIMARY KEY");
+  });
+
   it("stores one artist and album for repeated names and keeps the Eclipse track response", async () => {
     const { db } = database();
     await db.batch([insert(db,"a",row("one")),insert(db,"a",row("two"))]);

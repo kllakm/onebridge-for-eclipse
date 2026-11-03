@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+- Library scan/tag progress is stored in owner-keyed counters maintained by transactional track triggers; read one counter row per batch instead of scanning the library, so retries, deletes and concurrent writes remain accurate.
 - Backend is Cloudflare Workers + D1 (not Lovable Cloud): the owner deploys to their own Cloudflare account, so D1 is accessed via the `DB` binding resolved in `src/server/env.ts`.
 - One Worker serves the UI, `/api/*` and the Eclipse addon under `/addon/$token/*`; this avoids cross-origin session cookies.
 - Every query on user data filters by `user_id`, and addon requests resolve the URL token to exactly one user first (`addonHandler`) — server-side isolation is the security boundary.

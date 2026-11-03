@@ -1,4 +1,7 @@
 # Missing music metadata
+- [x] Replace per-batch full-library progress counts with transactional owner counters; test retries, deletion and isolation.
+- [x] Surface dashboard load failures and document safe incomplete-migration diagnosis.
+- [ ] Repair external incomplete migration and measure deployed quota usage — waiting on owner's schema inventory/failed response and deployment of 0005.
 - [x] Add bounded embedded-tag extraction with a Worker-compatible parser.
 - [x] Add a resumable metadata scan for existing tracks and progress counts.
 - [x] Test tag extraction and owner isolation; document deployment and retesting.

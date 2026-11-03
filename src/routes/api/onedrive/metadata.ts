@@ -11,7 +11,8 @@ export const Route = createFileRoute("/api/onedrive/metadata")({
       const user = await requireUser(db, request);
       const body: unknown = await request.json().catch(() => ({}));
       const diagnose = typeof body === "object" && body !== null && "diagnose" in body && body.diagnose === true;
-      return json(await metadataStep(env, db, user.id, diagnose));
+      const retryFailed = typeof body === "object" && body !== null && "retryFailed" in body && body.retryFailed === true;
+      return json(await metadataStep(env, db, user.id, diagnose, retryFailed));
     }),
   } },
 });

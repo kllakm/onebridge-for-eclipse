@@ -1,0 +1,13 @@
+// Cloudflare settings for this app. The build merges this into its generated Worker config.
+// Only the database_id needs changing (see docs/DEPLOY.md, step 3). No secrets in this file.
+{
+  "name": "eclipse-onedrive",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "eclipse-onedrive",
+      "database_id": "PASTE_YOUR_DATABASE_ID_HERE",
+      "migrations_dir": "migrations"
+    }
+  ]
+}

@@ -6,6 +6,7 @@
 - [x] Handle bounded Microsoft media redirects and separate download error diagnostics.
 - [x] Extend the bounded tag-read wait and distinguish header/body timeouts; test cancellation.
 - [x] Resolve deployed metadata failure — owner reports tags now recovering; full-library completion remains unverified.
+- [x] Investigate reported safe-read-limit diagnostic — current reader caps both bytes and requests; the specific exhausted limit remains unverified.
 
 # OneBridge testing update
 - [x] Apply supplied OneBridge branding and favicon without changing playback.

@@ -8,6 +8,6 @@
 - [x] Resolve deployed metadata failure — owner reports tags now recovering; full-library completion remains unverified.
 
 # OneBridge testing update
-- [ ] Apply supplied OneBridge branding and favicon without changing playback.
-- [ ] Block new signups while preserving existing sign-in.
-- [ ] Show clear progress during sync changes and full rescan.
+- [x] Apply supplied OneBridge branding and favicon without changing playback.
+- [x] Block new signups while preserving existing sign-in.
+- [x] Show clear progress during sync changes and full rescan.

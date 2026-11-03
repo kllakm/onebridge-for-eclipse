@@ -38,7 +38,7 @@ export function mergeTags(row: TrackRow, metadata: IAudioMetadata): TrackRow {
 
 export async function readEmbeddedTags(url: string, size: number, name: string) {
   const mp3 = /\.mp3$/i.test(name);
-  const tokenizer = new RangeTokenizer(url, size, name, mp3 ? 4096 : undefined);
+  const tokenizer = new RangeTokenizer(url, size, name);
   const timeout = setTimeout(() => { void tokenizer.close(); }, TAG_TIMEOUT_MS);
   try {
     if (mp3) {

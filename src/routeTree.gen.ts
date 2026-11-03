@@ -10,33 +10,154 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiAddonTokenRouteImport } from './routes/api/addon-token'
+import { Route as ApiMeRouteImport } from './routes/api/me'
+import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
+import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
+import { Route as ApiAuthSignupRouteImport } from './routes/api/auth/signup'
+import { Route as ApiOnedriveCallbackRouteImport } from './routes/api/onedrive/callback'
+import { Route as ApiOnedriveConnectRouteImport } from './routes/api/onedrive/connect'
+import { Route as ApiOnedriveDisconnectRouteImport } from './routes/api/onedrive/disconnect'
+import { Route as ApiOnedriveScanRouteImport } from './routes/api/onedrive/scan'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAddonTokenRoute = ApiAddonTokenRouteImport.update({
+  id: '/api/addon-token',
+  path: '/api/addon-token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiMeRoute = ApiMeRouteImport.update({
+  id: '/api/me',
+  path: '/api/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
+  id: '/api/auth/login',
+  path: '/api/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
+  id: '/api/auth/logout',
+  path: '/api/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthSignupRoute = ApiAuthSignupRouteImport.update({
+  id: '/api/auth/signup',
+  path: '/api/auth/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOnedriveCallbackRoute = ApiOnedriveCallbackRouteImport.update({
+  id: '/api/onedrive/callback',
+  path: '/api/onedrive/callback',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOnedriveConnectRoute = ApiOnedriveConnectRouteImport.update({
+  id: '/api/onedrive/connect',
+  path: '/api/onedrive/connect',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOnedriveDisconnectRoute = ApiOnedriveDisconnectRouteImport.update({
+  id: '/api/onedrive/disconnect',
+  path: '/api/onedrive/disconnect',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOnedriveScanRoute = ApiOnedriveScanRouteImport.update({
+  id: '/api/onedrive/scan',
+  path: '/api/onedrive/scan',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/api/addon-token': typeof ApiAddonTokenRoute
+  '/api/me': typeof ApiMeRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/signup': typeof ApiAuthSignupRoute
+  '/api/onedrive/callback': typeof ApiOnedriveCallbackRoute
+  '/api/onedrive/connect': typeof ApiOnedriveConnectRoute
+  '/api/onedrive/disconnect': typeof ApiOnedriveDisconnectRoute
+  '/api/onedrive/scan': typeof ApiOnedriveScanRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/api/addon-token': typeof ApiAddonTokenRoute
+  '/api/me': typeof ApiMeRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/signup': typeof ApiAuthSignupRoute
+  '/api/onedrive/callback': typeof ApiOnedriveCallbackRoute
+  '/api/onedrive/connect': typeof ApiOnedriveConnectRoute
+  '/api/onedrive/disconnect': typeof ApiOnedriveDisconnectRoute
+  '/api/onedrive/scan': typeof ApiOnedriveScanRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/api/addon-token': typeof ApiAddonTokenRoute
+  '/api/me': typeof ApiMeRoute
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/signup': typeof ApiAuthSignupRoute
+  '/api/onedrive/callback': typeof ApiOnedriveCallbackRoute
+  '/api/onedrive/connect': typeof ApiOnedriveConnectRoute
+  '/api/onedrive/disconnect': typeof ApiOnedriveDisconnectRoute
+  '/api/onedrive/scan': typeof ApiOnedriveScanRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/api/addon-token'
+    | '/api/me'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/signup'
+    | '/api/onedrive/callback'
+    | '/api/onedrive/connect'
+    | '/api/onedrive/disconnect'
+    | '/api/onedrive/scan'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/api/addon-token'
+    | '/api/me'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/signup'
+    | '/api/onedrive/callback'
+    | '/api/onedrive/connect'
+    | '/api/onedrive/disconnect'
+    | '/api/onedrive/scan'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/addon-token'
+    | '/api/me'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/signup'
+    | '/api/onedrive/callback'
+    | '/api/onedrive/connect'
+    | '/api/onedrive/disconnect'
+    | '/api/onedrive/scan'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  ApiAddonTokenRoute: typeof ApiAddonTokenRoute
+  ApiMeRoute: typeof ApiMeRoute
+  ApiAuthLoginRoute: typeof ApiAuthLoginRoute
+  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiAuthSignupRoute: typeof ApiAuthSignupRoute
+  ApiOnedriveCallbackRoute: typeof ApiOnedriveCallbackRoute
+  ApiOnedriveConnectRoute: typeof ApiOnedriveConnectRoute
+  ApiOnedriveDisconnectRoute: typeof ApiOnedriveDisconnectRoute
+  ApiOnedriveScanRoute: typeof ApiOnedriveScanRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +169,83 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/addon-token': {
+      id: '/api/addon-token'
+      path: '/api/addon-token'
+      fullPath: '/api/addon-token'
+      preLoaderRoute: typeof ApiAddonTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/me': {
+      id: '/api/me'
+      path: '/api/me'
+      fullPath: '/api/me'
+      preLoaderRoute: typeof ApiMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/login': {
+      id: '/api/auth/login'
+      path: '/api/auth/login'
+      fullPath: '/api/auth/login'
+      preLoaderRoute: typeof ApiAuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/logout': {
+      id: '/api/auth/logout'
+      path: '/api/auth/logout'
+      fullPath: '/api/auth/logout'
+      preLoaderRoute: typeof ApiAuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/signup': {
+      id: '/api/auth/signup'
+      path: '/api/auth/signup'
+      fullPath: '/api/auth/signup'
+      preLoaderRoute: typeof ApiAuthSignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/onedrive/callback': {
+      id: '/api/onedrive/callback'
+      path: '/api/onedrive/callback'
+      fullPath: '/api/onedrive/callback'
+      preLoaderRoute: typeof ApiOnedriveCallbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/onedrive/connect': {
+      id: '/api/onedrive/connect'
+      path: '/api/onedrive/connect'
+      fullPath: '/api/onedrive/connect'
+      preLoaderRoute: typeof ApiOnedriveConnectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/onedrive/disconnect': {
+      id: '/api/onedrive/disconnect'
+      path: '/api/onedrive/disconnect'
+      fullPath: '/api/onedrive/disconnect'
+      preLoaderRoute: typeof ApiOnedriveDisconnectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/onedrive/scan': {
+      id: '/api/onedrive/scan'
+      path: '/api/onedrive/scan'
+      fullPath: '/api/onedrive/scan'
+      preLoaderRoute: typeof ApiOnedriveScanRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  ApiAddonTokenRoute: ApiAddonTokenRoute,
+  ApiMeRoute: ApiMeRoute,
+  ApiAuthLoginRoute: ApiAuthLoginRoute,
+  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiAuthSignupRoute: ApiAuthSignupRoute,
+  ApiOnedriveCallbackRoute: ApiOnedriveCallbackRoute,
+  ApiOnedriveConnectRoute: ApiOnedriveConnectRoute,
+  ApiOnedriveDisconnectRoute: ApiOnedriveDisconnectRoute,
+  ApiOnedriveScanRoute: ApiOnedriveScanRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -23,6 +23,12 @@ OneBridge connects a user's Microsoft OneDrive music library to [Eclipse Music](
 </p>
 <p align="center"><em>The OneBridge sign-in page: connect OneDrive, scan your music, add the private addon to Eclipse.</em></p>
 
+<p align="center">
+  <img src="public/images/dashboard.png" alt="The OneBridge dashboard showing OneDrive connection status, library statistics, scan controls and the Eclipse addon setup steps" width="900" />
+</p>
+<p align="center"><em>The dashboard: library totals, scan and tag tools, and the private Eclipse addon link.</em></p>
+
+
 
 **Status: testing-stage project, not a turnkey large-scale service.** New account registration is deliberately disabled in both the interface and the server. Existing testing accounts can sign in. A fresh deployment does **not** include an account or a working signup flow; see the account-access requirement below before deploying.
 

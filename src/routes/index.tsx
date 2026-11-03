@@ -81,7 +81,8 @@ function Index() {
           </ol>
         </div>
 
-        <div className="relative self-start rounded-2xl border border-border bg-card p-6 shadow-2xl">
+        <div className="relative self-start">
+        <div className="rounded-2xl border border-border bg-card p-6 shadow-2xl">
           {me && <div className="mb-4"><SetupNotice configured={me.configured} /></div>}
           <h2 className="text-2xl font-semibold">Welcome back</h2>
           <form onSubmit={submit} className="mt-6 space-y-4">
@@ -98,6 +99,8 @@ function Index() {
             <Button type="submit" className="w-full" disabled={busy}>{busy ? "Please wait…" : "Sign in"}</Button>
           </form>
           <p className="mt-4 text-sm text-muted-foreground">New signups are temporarily closed during testing.</p>
+        </div>
+        <SupportCoffee compact className="mt-6" />
         </div>
       </section>
 
@@ -121,7 +124,6 @@ function Index() {
         </div>
       </section>
 
-      <SupportCoffee className="mx-auto max-w-6xl" />
     </main>
   );
 }

@@ -7,6 +7,9 @@
 - [x] Extend the bounded tag-read wait and distinguish header/body timeouts; test cancellation.
 - [x] Resolve deployed metadata failure — owner reports tags now recovering; full-library completion remains unverified.
 - [x] Investigate reported safe-read-limit diagnostic — current reader caps both bytes and requests; the specific exhausted limit remains unverified.
+- [ ] Read MP3 text frames selectively, skipping large pictures with bounded requests; test large-cover recovery.
+- [ ] Speed tag batches with shared connection lookup and bounded parallel reads; add owner-scoped failed-file retry.
+- [ ] Verify tests and dashboard flow; document external OneDrive speed checks still required.
 
 # OneBridge testing update
 - [x] Apply supplied OneBridge branding and favicon without changing playback.

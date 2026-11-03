@@ -49,6 +49,7 @@ function Dashboard() {
   const [addonUrl, setAddonUrl] = useState<string | null>(null);
   const [connectionError, setConnectionError] = useState<string | null>(null);
   const [readingTags, setReadingTags] = useState(false);
+  const [tagIssue, setTagIssue] = useState<string | null>(null);
   const [tagProgress, setTagProgress] = useState<{ processed: number; total: number; tagged: number; unavailable: number; done: boolean } | null>(null);
 
   const load = useCallback(async () => {
@@ -106,13 +107,19 @@ function Dashboard() {
     }
   }
 
-  async function readTags() {
+  async function readTags(diagnose = false) {
     setReadingTags(true);
+    setTagIssue(null);
     try {
       let done = false;
       while (!done) {
-        const result = await api<{ processed: number; total: number; tagged: number; unavailable: number; done: boolean }>("/api/onedrive/metadata", { method: "POST" });
+        const result = await api<{ processed: number; total: number; tagged: number; unavailable: number; done: boolean; issues?: string[] }>("/api/onedrive/metadata", { method: "POST", body: JSON.stringify({ diagnose }) });
         setTagProgress(result);
+        if (result.issues?.length) {
+          setTagIssue(result.issues.join("; "));
+          return;
+        }
+        if (diagnose) break;
         done = result.done;
       }
       toast.success("Song details updated");
@@ -207,8 +214,12 @@ function Dashboard() {
             )}
           </div>
           {tracks > 0 && <div className="mt-4 space-y-2">
-            <Button variant="outline" disabled={scanning || readingTags} onClick={readTags}>{readingTags ? "Reading song details…" : "Read song details"}</Button>
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" disabled={scanning || readingTags} onClick={() => readTags()}>{readingTags ? "Reading song details…" : "Read song details"}</Button>
+              <Button variant="outline" disabled={scanning || readingTags} onClick={() => readTags(true)}>Check one failed file</Button>
+            </div>
             {tagProgress && <p role="status" className="text-sm text-muted-foreground">{tagProgress.processed} / {tagProgress.total} checked · {tagProgress.tagged} with tags · {tagProgress.unavailable} unavailable</p>}
+            {tagIssue && <p role="alert" className="text-sm text-destructive">{tagIssue}</p>}
           </div>}
         </section>
       )}

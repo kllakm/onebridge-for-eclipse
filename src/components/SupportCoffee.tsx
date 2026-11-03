@@ -16,7 +16,7 @@ export function SupportCoffee({ className = "" }: { className?: string }) {
           aria-label="Support OneBridge on Buy Me a Coffee"
           className="shrink-0 transition hover:opacity-90"
         >
-          <img src={bmcButton.url} alt="Buy me a coffee" width={160} height={45} loading="lazy" />
+          <img src={bmcButton.url} alt="Buy me a coffee" width={160} height={45} />
         </a>
       </div>
     </section>

@@ -144,7 +144,7 @@ With account access properly configured, follow [Using OneBridge](#using-onebrid
 
 ### Other hosting providers and custom domains
 
-- **Own Cloudflare account:** supported target; no Lovable preview or asset service is required to serve images. Logos, donation graphics and favicons are in `public/` and served by your instance.
+- **Own Cloudflare account:** supported target; no external preview host or asset service is required to serve images. Logos, donation graphics and favicons are in `public/` and served by your instance.
 - **Custom domain:** configure it on your Worker, update `APP_URL` and register the matching Microsoft callback URI.
 - **Non-Cloudflare host:** not a drop-in deployment. This app uses Cloudflare Workers runtime bindings and D1. Moving to another host requires a runtime/database adaptation and fresh validation of sessions, encryption, migrations and all addon endpoints. Uploading files to static hosting alone will not run it.
 

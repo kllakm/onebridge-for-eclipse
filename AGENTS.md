@@ -10,8 +10,10 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+- Keep the shared Vite configuration dependency: it supplies the framework plugins and Cloudflare build integration; removing it breaks deployment.
+- Root error handling uses the existing console logger and recovery UI without optional editor telemetry, so independent deployments do not need editor hooks.
 - Library scan/tag progress is stored in owner-keyed counters maintained by transactional track triggers; read one counter row per batch instead of scanning the library, so retries, deletes and concurrent writes remain accurate.
-- Backend is Cloudflare Workers + D1 (not Lovable Cloud): the owner deploys to their own Cloudflare account, so D1 is accessed via the `DB` binding resolved in `src/server/env.ts`.
+- Backend is Cloudflare Workers + D1: the owner deploys to their own Cloudflare account, so D1 is accessed via the `DB` binding resolved in `src/server/env.ts`.
 - One Worker serves the UI, `/api/*` and the Eclipse addon under `/addon/$token/*`; this avoids cross-origin session cookies.
 - Every query on user data filters by `user_id`, and addon requests resolve the URL token to exactly one user first (`addonHandler`) — server-side isolation is the security boundary.
 - Microsoft tokens are AES-GCM encrypted at rest and only touched in `src/server/graph.ts`; audio is never proxied — `/stream` returns a fresh OneDrive downloadUrl.
@@ -22,4 +24,4 @@
 - Microsoft OAuth failures expose only allowlisted diagnostic identifiers after state validation, never raw callback descriptions; this enables troubleshooting without leaking account details.
 - Embedded tags use bounded range reads and music-metadata decoding; ordinary MP3 text frames are compacted before decoding to skip artwork bodies, with bounded fallback for unsupported ID3 layouts. Three concurrent files share a request-local owner token to avoid redundant refreshes and stay within Worker limits; audio playback remains direct-file.
 - Signup availability must be enforced at the server endpoint, not just hidden in the UI, so direct requests cannot bypass testing access restrictions.
-- Displayed images and favicons live in public files and use same-origin paths so standalone Worker deployments have no Lovable asset-service dependency.
+- Displayed images and favicons live in public files and use same-origin paths so standalone Worker deployments have no external asset-service dependency.

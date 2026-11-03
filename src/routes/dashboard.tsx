@@ -48,6 +48,8 @@ function Dashboard() {
   const [folder, setFolder] = useState("");
   const [addonUrl, setAddonUrl] = useState<string | null>(null);
   const [connectionError, setConnectionError] = useState<string | null>(null);
+  const [readingTags, setReadingTags] = useState(false);
+  const [tagProgress, setTagProgress] = useState<{ processed: number; total: number; tagged: number; unavailable: number; done: boolean } | null>(null);
 
   const load = useCallback(async () => {
     const m = await api<MeResponse>("/api/me");
@@ -101,6 +103,24 @@ function Dashboard() {
       load();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "Could not create link");
+    }
+  }
+
+  async function readTags() {
+    setReadingTags(true);
+    try {
+      let done = false;
+      while (!done) {
+        const result = await api<{ processed: number; total: number; tagged: number; unavailable: number; done: boolean }>("/api/onedrive/metadata", { method: "POST" });
+        setTagProgress(result);
+        done = result.done;
+      }
+      toast.success("Song details updated");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Could not read song details");
+    } finally {
+      setReadingTags(false);
+      load();
     }
   }
 
@@ -178,14 +198,18 @@ function Dashboard() {
               <Input id="folder" value={folder} onChange={(e) => setFolder(e.target.value)} placeholder="Music" />
             </div>
             {folder !== me.connection.folder ? (
-              <Button disabled={scanning} onClick={() => scan({ folder })}>Save folder & scan</Button>
+              <Button disabled={scanning || readingTags} onClick={() => scan({ folder })}>Save folder & scan</Button>
             ) : (
               <>
-                <Button disabled={scanning} onClick={() => scan()}>{scanning ? "Scanning…" : tracks ? "Sync changes" : "Scan library"}</Button>
-                {tracks > 0 && <Button variant="outline" disabled={scanning} onClick={() => scan({ full: true })}>Full rescan</Button>}
+                <Button disabled={scanning || readingTags} onClick={() => scan()}>{scanning ? "Scanning…" : tracks ? "Sync changes" : "Scan library"}</Button>
+                {tracks > 0 && <Button variant="outline" disabled={scanning || readingTags} onClick={() => scan({ full: true })}>Full rescan</Button>}
               </>
             )}
           </div>
+          {tracks > 0 && <div className="mt-4 space-y-2">
+            <Button variant="outline" disabled={scanning || readingTags} onClick={readTags}>{readingTags ? "Reading song details…" : "Read song details"}</Button>
+            {tagProgress && <p role="status" className="text-sm text-muted-foreground">{tagProgress.processed} / {tagProgress.total} checked · {tagProgress.tagged} with tags · {tagProgress.unavailable} unavailable</p>}
+          </div>}
         </section>
       )}
 

@@ -17,3 +17,4 @@
 - Schema changes go in a new file under `migrations/` (D1 migrations), never by editing applied ones.
 - Feasibility findings and unverified items live in `docs/FEASIBILITY.md`; keep it updated when something is tested.
 - Microsoft OAuth failures expose only allowlisted diagnostic identifiers after state validation, never raw callback descriptions; this enables troubleshooting without leaking account details.
+- Embedded music tags are read in a separate owner-scoped resumable pass using a range tokenizer and music-metadata; strict byte/request caps prevent full audio downloads and preserve playback's direct-file architecture.

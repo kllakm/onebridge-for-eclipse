@@ -46,3 +46,10 @@ See docs/TEST-CHECKLIST.md. Nothing in sections 2–3 marked unverified should b
 - Reported during deployment testing on 3 Nov 2026: Microsoft returns to the app after entering a username, before a password prompt. The previous callback labelled every provider error as cancellation; that message did not establish the cause.
 - The callback now validates the one-time state and displays only the Microsoft error identifier (AADSTS code when available), not account details or the full callback payload. Diagnostic extraction is covered by automated tests.
 - **Unverified:** the actual Microsoft configuration/account error and successful sign-in on the owner's deployed Worker. Retry after Cloudflare deploys this update and capture the displayed identifier.
+- Owner subsequently confirmed connection, library scanning and filename search in Eclipse Web. Microsoft rejected the personal-only registration at the `/common` endpoint; correcting the audience allowed connection.
+
+## 9. Playback and metadata testing (3 Nov 2026)
+- Owner reports Eclipse Web changes Play to Pause but no audio plays. The stream response is `404 {"error":"No download URL for this file"}`: the Graph item lookup returned no download URL annotation.
+- Added a fallback to Graph `/me/drive/items/{id}/content`, reading its 302 Location with manual redirect handling. The server does not follow the redirect or proxy audio. Automated tests cover annotation success, missing-annotation fallback, owner-scoped token lookup and missing-file errors.
+- **Unverified:** successful playback with this fallback on the deployed Worker, audio-host CORS and seeking. Requires retry after deployment.
+- Owner reports filename-only metadata despite embedded tags. The scanner relies on Graph's audio facet, not embedded-tag extraction. Microsoft documents this facet as OneDrive Personal only; metadata recovery remains unresolved.

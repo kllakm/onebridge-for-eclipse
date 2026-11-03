@@ -30,7 +30,7 @@ Audio never passes through our server: `/stream/{id}` checks ownership, refreshe
 Risk: tracks saved to Eclipse playlists store the stream URL. Because ours expires, those tracks need the addon installed so Eclipse can call `/stream/{id}` again. The docs describe this behaviour.
 
 ## 5. Cloudflare Workers
-TanStack Start builds to a Cloudflare Worker. One Worker serves the web pages, the JSON API and the addon endpoints. A separate Pages project is not needed: it would add a second deployment and a cross-origin cookie problem for no benefit. D1 is bound as `DB`, and secrets are set with `wrangler secret put`.
+TanStack Start builds to a Cloudflare Worker. One Worker serves the web pages, the JSON API and the addon endpoints. Deployed via Cloudflare Workers Builds from GitHub (the build merges `wrangler.jsonc` into its generated config). A separate Pages project is not needed: it would add a second deployment and a cross-origin cookie problem for no benefit. D1 is bound as `DB`, and secrets are set with `wrangler secret put`.
 Scanning is split into steps (5 Graph pages per request) to stay under Worker subrequest limits. The dashboard repeats steps until done.
 
 ## 6. Security model

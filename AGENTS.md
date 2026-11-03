@@ -16,3 +16,4 @@
 - Microsoft tokens are AES-GCM encrypted at rest and only touched in `src/server/graph.ts`; audio is never proxied — `/stream` returns a fresh OneDrive downloadUrl.
 - Schema changes go in a new file under `migrations/` (D1 migrations), never by editing applied ones.
 - Feasibility findings and unverified items live in `docs/FEASIBILITY.md`; keep it updated when something is tested.
+- Microsoft OAuth failures expose only allowlisted diagnostic identifiers after state validation, never raw callback descriptions; this enables troubleshooting without leaking account details.

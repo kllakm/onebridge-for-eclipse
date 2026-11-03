@@ -25,6 +25,7 @@ export const Route = createFileRoute("/dashboard")({
 const ONEDRIVE_MSG: Record<string, string> = {
   connected: "OneDrive connected. Now scan your music.",
   cancelled: "Microsoft sign-in was cancelled.",
+  provider_error: "Microsoft could not complete sign-in.",
   expired: "That sign-in link expired. Please try again.",
   failed: "Microsoft sign-in failed. Please try again.",
   invalid: "Microsoft sign-in returned an unexpected response.",
@@ -46,6 +47,7 @@ function Dashboard() {
   const [scanning, setScanning] = useState(false);
   const [folder, setFolder] = useState("");
   const [addonUrl, setAddonUrl] = useState<string | null>(null);
+  const [connectionError, setConnectionError] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const m = await api<MeResponse>("/api/me");
@@ -59,9 +61,14 @@ function Dashboard() {
 
   useEffect(() => {
     load().catch(() => {});
-    const msg = new URLSearchParams(window.location.search).get("onedrive");
+    const params = new URLSearchParams(window.location.search);
+    const msg = params.get("onedrive");
     if (msg && ONEDRIVE_MSG[msg]) {
-      (msg === "connected" ? toast.success : toast.error)(ONEDRIVE_MSG[msg]);
+      const diagnostic = params.get("microsoft_error");
+      const safeDiagnostic = diagnostic && /^(AADSTS\d{4,10}|[a-z_]{1,64})$/.test(diagnostic) ? diagnostic : null;
+      const message = ONEDRIVE_MSG[msg] + (safeDiagnostic ? ` Microsoft error: ${safeDiagnostic}.` : "");
+      if (msg === "connected") toast.success(message);
+      else setConnectionError(message);
       window.history.replaceState(null, "", "/dashboard");
     }
   }, [load]);
@@ -136,6 +143,7 @@ function Dashboard() {
       </header>
 
       <div className="mt-6"><SetupNotice configured={me.configured} /></div>
+      {connectionError && <p role="alert" className="mt-6 rounded-lg border border-destructive bg-card p-4 text-sm text-destructive">{connectionError}</p>}
 
       <section className="mt-8 rounded-2xl border border-border bg-card p-6">
         <h2 className="text-xl font-semibold">1. Microsoft OneDrive</h2>

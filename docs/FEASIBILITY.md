@@ -41,3 +41,8 @@ Scanning is split into steps (5 Graph pages per request) to stay under Worker su
 
 ## 7. What still needs real-world testing
 See docs/TEST-CHECKLIST.md. Nothing in sections 2–3 marked unverified should be treated as working until it has been tested on a real device.
+
+## 8. Microsoft sign-in diagnostics
+- Reported during deployment testing on 3 Nov 2026: Microsoft returns to the app after entering a username, before a password prompt. The previous callback labelled every provider error as cancellation; that message did not establish the cause.
+- The callback now validates the one-time state and displays only the Microsoft error identifier (AADSTS code when available), not account details or the full callback payload. Diagnostic extraction is covered by automated tests.
+- **Unverified:** the actual Microsoft configuration/account error and successful sign-in on the owner's deployed Worker. Retry after Cloudflare deploys this update and capture the displayed identifier.

@@ -100,7 +100,7 @@ Use GitHub's **Fork** button for your own repository, or **Code → Download ZIP
 
 ### 2. Create your D1 database
 
-Create a D1 database in Cloudflare. In `wrangler.jsonc`, replace the existing `database_id` with **your** database ID, set `database_name` to your database's name and retain the `DB` binding. The included database ID is a deployment identifier, not permission to access that database.
+Create a D1 database in Cloudflare. In `wrangler.jsonc`, replace the `REPLACE_WITH_YOUR_D1_DATABASE_ID` placeholder with **your** database ID, set `database_name` to your database's name and retain the `DB` binding. The repository intentionally ships no real database ID.
 
 The Worker name in `wrangler.jsonc` and your Cloudflare deployment must agree. You can keep `eclipse-onedrive` for your own installation or change both together.
 

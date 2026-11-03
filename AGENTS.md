@@ -15,8 +15,9 @@
 - Every query on user data filters by `user_id`, and addon requests resolve the URL token to exactly one user first (`addonHandler`) — server-side isolation is the security boundary.
 - Microsoft tokens are AES-GCM encrypted at rest and only touched in `src/server/graph.ts`; audio is never proxied — `/stream` returns a fresh OneDrive downloadUrl.
 - Schema changes go in a new file under `migrations/` (D1 migrations), never by editing applied ones.
+- Do not persist unused OneDrive path/MIME copies; keep extension, filename and modification timestamp needed for playback/tag indexing. Metadata queue indexes cover only actionable statuses to avoid indexing completed songs.
 - Feasibility findings and unverified items live in `docs/FEASIBILITY.md`; keep it updated when something is tested.
 - Microsoft OAuth failures expose only allowlisted diagnostic identifiers after state validation, never raw callback descriptions; this enables troubleshooting without leaking account details.
-- Embedded music tags are read in a separate owner-scoped resumable pass using a range tokenizer and music-metadata; strict byte/request caps prevent full audio downloads and preserve playback's direct-file architecture.
+- Embedded tags use bounded range reads and music-metadata decoding; ordinary MP3 text frames are compacted before decoding to skip artwork bodies, with bounded fallback for unsupported ID3 layouts. Three concurrent files share a request-local owner token to avoid redundant refreshes and stay within Worker limits; audio playback remains direct-file.
 - Signup availability must be enforced at the server endpoint, not just hidden in the UI, so direct requests cannot bypass testing access restrictions.
-- Shared branding uses an absolute hosted asset address for external Worker deployments; favicons remain local public files so browser fallback requests use the same brand.
+- Displayed images and favicons live in public files and use same-origin paths so standalone Worker deployments have no Lovable asset-service dependency.

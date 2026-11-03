@@ -7,6 +7,12 @@
 - [x] Extend the bounded tag-read wait and distinguish header/body timeouts; test cancellation.
 - [x] Resolve deployed metadata failure — owner reports tags now recovering; full-library completion remains unverified.
 - [x] Investigate reported safe-read-limit diagnostic — current reader caps both bytes and requests; the specific exhausted limit remains unverified.
+- [x] Read MP3 text frames selectively, skipping large pictures with bounded requests; test large-cover recovery.
+- [x] Speed tag batches with shared connection lookup and bounded parallel reads; add owner-scoped failed-file retry.
+- [x] Verify tests and simulated dashboard flow; document external OneDrive speed checks still required.
+- [x] Implement small safe D1 storage savings without a schema overhaul; migration and unmeasured deployed size documented.
+- [x] Move displayed logo and donation SVGs to public files for independent Cloudflare hosting; verify images.
+- [ ] Apply storage migration and measure deployed scan speed/size — requires owner's Cloudflare access and deployment.
 
 # OneBridge testing update
 - [x] Apply supplied OneBridge branding and favicon without changing playback.

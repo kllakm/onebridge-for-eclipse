@@ -140,3 +140,14 @@ Click **Deploy** (or Save) after adding them. Use **Secret** for all four, inclu
 ## Using your own domain later (optional)
 
 Worker → **Settings → Domains & Routes → Add → Custom domain**. Then update `APP_URL` in Cloudflare and add the new redirect URI in Microsoft (step 7, **Authentication → Add URI**).
+
+## Faster tag reading and small storage update (existing installation)
+
+1. Wait for Cloudflare's latest automatic deployment to show **Success**, then refresh your app. Images now come from `/images/` on your own Worker; no Lovable image address is required.
+2. Click **Check one failed file** to test the improved MP3 reader. If that succeeds, click **Retry failed files** to requeue the earlier failures and continue unchecked tracks. Completed tags are retained; no full rescan or replacement addon link is needed. Unsupported tag layouts can still reach the safety limits.
+3. For the small storage changes, first create a recovery point/export using your D1 database's available **Time Travel** or **Export** controls, and record the current reported database size. Pause scanning/tag reading while applying the change.
+4. Open **D1 → eclipse-onedrive → Console**. In GitHub, open `migrations/0003_small_storage.sql` → **Raw**, and execute each SQL statement separately in file order. This assumes `0002_metadata.sql` was already applied. This clears unused folder-path/MIME copies and replaces the metadata queue index; it does not delete songs or their tags.
+5. Refresh your app, check the track/album counts, search for a tagged song in Eclipse and play it. Resume **Read song details** or **Retry failed files** as appropriate.
+6. Compare D1's reported size after the change. SQLite can reuse freed pages without immediately reporting a smaller file; a large or immediate reduction is not guaranteed. Do not delete songs or run a database rebuild just to force a smaller number.
+
+No Microsoft permissions, secrets, existing account, addon link or database table layout changes are required. New signups remain closed during testing; use your existing account.

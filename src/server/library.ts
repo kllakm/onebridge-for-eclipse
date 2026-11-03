@@ -26,10 +26,10 @@ export type DriveItem = {
 export type TrackRow = {
   item_id: string;
   name: string;
-  path: string;
+  path: string | null;
   size: number;
   ext: string;
-  mime: string;
+  mime: string | null;
   title: string;
   artist: string;
   album: string;
@@ -73,10 +73,11 @@ export function itemToTrack(item: DriveItem): TrackRow | null {
   return {
     item_id: item.id,
     name: item.name,
-    path: (item.parentReference?.path ?? "").replace(/^\/drive\/root:/, "") || "/",
+    // Neither field is consumed by search, tags or streaming; OneDrive remains the source.
+    path: null,
     size: item.size ?? 0,
     ext,
-    mime: item.file.mimeType ?? "",
+    mime: null,
     title,
     artist,
     album,

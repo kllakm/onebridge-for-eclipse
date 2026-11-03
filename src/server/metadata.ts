@@ -2,7 +2,8 @@ import { parseFromTokenizer, type IAudioMetadata } from "music-metadata";
 import { RangeTokenizer, TagDownloadError, TAG_TIMEOUT_MS } from "./range-tokenizer";
 import { keyOf, type TrackRow } from "./library";
 import type { AppEnv, D1 } from "./env";
-import { downloadUrl } from "./graph";
+import { metadataDownloader } from "./graph";
+import { readSelectiveMp3Tags } from "./mp3-tags";
 import { HttpError } from "./http";
 
 export function tagFailure(error: unknown): string {
@@ -36,9 +37,14 @@ export function mergeTags(row: TrackRow, metadata: IAudioMetadata): TrackRow {
 }
 
 export async function readEmbeddedTags(url: string, size: number, name: string) {
+  const mp3 = /\.mp3$/i.test(name);
   const tokenizer = new RangeTokenizer(url, size, name);
   const timeout = setTimeout(() => { void tokenizer.close(); }, TAG_TIMEOUT_MS);
   try {
+    if (mp3) {
+      const tags = await readSelectiveMp3Tags(tokenizer);
+      if (tags) return tags;
+    }
     return await parseFromTokenizer(tokenizer, { skipCovers: true, duration: false });
   } finally {
     clearTimeout(timeout);
@@ -47,16 +53,19 @@ export async function readEmbeddedTags(url: string, size: number, name: string) 
 }
 
 /** Three files per request keeps range and Graph calls within the Free Worker budget. */
-export async function metadataStep(env: AppEnv, db: D1, userId: string, diagnose = false) {
+export async function metadataStep(env: AppEnv, db: D1, userId: string, diagnose = false, retryFailed = false) {
   const issues: string[] = [];
+  if (retryFailed && !diagnose) await db.prepare("UPDATE music_files SET tag_status='pending' WHERE user_id=? AND tag_status='unavailable'").bind(userId).run();
   const rows = await db.prepare(diagnose
     ? "SELECT * FROM music_files WHERE user_id=? AND tag_status='unavailable' ORDER BY item_id LIMIT 1"
     : "SELECT * FROM music_files WHERE user_id=? AND tag_status='pending' ORDER BY item_id LIMIT 3")
     .bind(userId).all<TrackRow>();
-  for (const row of rows.results) {
+  const downloader = rows.results.length ? await metadataDownloader(env, db, userId) : null;
+  await Promise.all(rows.results.map(async (row) => {
+    if (!downloader) return;
     let stage = "Download link";
     try {
-      const url = await downloadUrl(env, db, userId, row.item_id);
+      const url = await downloader(row.item_id);
       stage = "Embedded tags";
       const metadata = await readEmbeddedTags(url, row.size, row.name);
       const t = mergeTags(row, metadata);
@@ -71,9 +80,8 @@ export async function metadataStep(env: AppEnv, db: D1, userId: string, diagnose
       // Never log the signed download URL or parser errors that may contain it.
       if (!diagnose) await db.prepare("UPDATE music_files SET tag_status='unavailable' WHERE user_id=? AND item_id=?")
         .bind(userId, row.item_id).run();
-      break;
     }
-  }
+  }));
   const counts = await db.prepare(`SELECT COUNT(*) AS total,
     SUM(CASE WHEN tag_status!='pending' THEN 1 ELSE 0 END) AS processed,
     SUM(CASE WHEN tag_status='complete' THEN 1 ELSE 0 END) AS tagged,

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { downloadUrl } from "./graph";
+import { downloadUrl, metadataDownloader } from "./graph";
 import { encryptString } from "./crypto";
 import type { D1, D1Stmt } from "./env";
 
@@ -21,6 +21,17 @@ async function setup() {
 }
 
 describe("OneDrive download URL", () => {
+  it("shares one owner connection lookup across concurrent metadata downloads and skips the annotation request", async () => {
+    const { db, env, bind } = await setup();
+    const mock = vi.fn().mockImplementation(async (url: string) => new Response(null, { status: 302, headers: { location: `https://download.example.test/${url.includes('track!1') ? 'one' : 'two'}.mp3` } }));
+    vi.stubGlobal("fetch", mock);
+    const getUrl = await metadataDownloader(env, db, "owner-id");
+    const result = await Promise.all([getUrl("track!1"), getUrl("track!2")]);
+    expect(result).toEqual(["https://download.example.test/one.mp3", "https://download.example.test/two.mp3"]);
+    expect(bind.mock.calls).toEqual([["owner-id"]]);
+    expect(mock).toHaveBeenCalledTimes(2);
+    expect(mock.mock.calls.every(([url]) => String(url).endsWith("/content"))).toBe(true);
+  });
   it("uses the content redirect when the item omits its download annotation without fetching audio", async () => {
     const { db, env, bind } = await setup();
     const fetchMock = vi.fn()

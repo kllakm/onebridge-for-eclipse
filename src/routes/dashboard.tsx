@@ -117,13 +117,15 @@ function Dashboard() {
     }
   }
 
-  async function readTags(diagnose = false) {
+  async function readTags(diagnose = false, retryFailed = false) {
     setReadingTags(true);
     setTagIssue(null);
     try {
       let done = false;
+      let first = true;
       while (!done) {
-        const result = await api<{ processed: number; total: number; tagged: number; unavailable: number; done: boolean; issues?: string[] }>("/api/onedrive/metadata", { method: "POST", body: JSON.stringify({ diagnose }) });
+        const result = await api<{ processed: number; total: number; tagged: number; unavailable: number; done: boolean; issues?: string[] }>("/api/onedrive/metadata", { method: "POST", body: JSON.stringify({ diagnose, retryFailed: first && retryFailed }) });
+        first = false;
         setTagProgress(result);
         if (result.issues?.length) {
           setTagIssue(result.issues.join("; "));
@@ -237,6 +239,7 @@ function Dashboard() {
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" disabled={scanning || readingTags} onClick={() => readTags()}>{readingTags ? "Reading song details…" : "Read song details"}</Button>
               <Button variant="outline" disabled={scanning || readingTags} onClick={() => readTags(true)}>Check one failed file</Button>
+              <Button variant="outline" disabled={scanning || readingTags} onClick={() => readTags(false, true)}>Retry failed files</Button>
             </div>
             {tagProgress && <p role="status" className="text-sm text-muted-foreground">{tagProgress.processed} / {tagProgress.total} checked · {tagProgress.tagged} with tags · {tagProgress.unavailable} unavailable</p>}
             {tagIssue && <p role="alert" className="text-sm text-destructive">{tagIssue}</p>}

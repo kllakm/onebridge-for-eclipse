@@ -1,5 +1,3 @@
-import bmcButton from "@/assets/bmc-button.svg.asset.json";
-
 const BMC_URL = "https://buymeacoffee.com/enufstyle";
 
 export function SupportCoffee({ className = "" }: { className?: string }) {
@@ -16,7 +14,7 @@ export function SupportCoffee({ className = "" }: { className?: string }) {
           aria-label="Support OneBridge on Buy Me a Coffee"
           className="shrink-0 transition hover:opacity-90"
         >
-          <img src={bmcButton.url} alt="Buy me a coffee" width={160} height={45} />
+          <img src="/images/bmc-button.svg" alt="Buy me a coffee" width={160} height={45} />
         </a>
       </div>
     </section>

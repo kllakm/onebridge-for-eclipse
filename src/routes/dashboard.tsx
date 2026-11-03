@@ -4,16 +4,17 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Brand } from "@/components/Brand";
 import { SetupNotice } from "@/components/SetupNotice";
 import { api, type MeResponse } from "@/lib/api";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
-      { title: "Your library — OneDrive for Eclipse Music" },
-      { name: "description", content: "Connect OneDrive, scan your music and get your private Eclipse Music addon link." },
-      { property: "og:title", content: "Your library — OneDrive for Eclipse Music" },
-      { property: "og:description", content: "Manage your OneDrive connection and Eclipse addon link." },
+      { title: "Your library — OneBridge for Eclipse" },
+      { name: "description", content: "Manage your OneBridge library, OneDrive connection and private Eclipse addon link." },
+      { property: "og:title", content: "Your library — OneBridge for Eclipse" },
+      { property: "og:description", content: "Manage your music library with OneBridge for Eclipse." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "robots", content: "noindex" },
@@ -45,6 +46,7 @@ function Dashboard() {
   const navigate = useNavigate();
   const [me, setMe] = useState<MeResponse | null>(null);
   const [scanning, setScanning] = useState(false);
+  const [scanProgress, setScanProgress] = useState<{ tracks: number; changes: number; batches: number; state: "running" | "done" | "paused" | "error"; full: boolean } | null>(null);
   const [folder, setFolder] = useState("");
   const [addonUrl, setAddonUrl] = useState<string | null>(null);
   const [connectionError, setConnectionError] = useState<string | null>(null);
@@ -78,17 +80,24 @@ function Dashboard() {
 
   async function scan(opts: { full?: boolean; folder?: string } = {}) {
     setScanning(true);
+    const full = Boolean(opts.full || opts.folder !== undefined);
+    setScanProgress({ tracks: full ? 0 : me?.sync?.track_count ?? 0, changes: 0, batches: 0, state: "running", full });
+    let completed = false;
     try {
       let body: Record<string, unknown> = opts;
       for (let i = 0; i < 200; i++) {
-        const r = await api<{ done: boolean; trackCount: number }>("/api/onedrive/scan", { method: "POST", body: JSON.stringify(body) });
+        const r = await api<{ done: boolean; trackCount: number; changed: number }>("/api/onedrive/scan", { method: "POST", body: JSON.stringify(body) });
         body = {};
+        setScanProgress((previous) => ({ tracks: r.trackCount, changes: (previous?.changes ?? 0) + r.changed, batches: i + 1, state: r.done ? "done" : "running", full }));
         if (r.done) {
+          completed = true;
           toast.success(`Library ready: ${r.trackCount} tracks`);
           break;
         }
       }
+      if (!completed) setScanProgress((previous) => previous ? { ...previous, state: "paused" } : null);
     } catch (e) {
+      setScanProgress((previous) => previous ? { ...previous, state: "error" } : null);
       toast.error(e instanceof Error ? e.message : "Scan failed");
     } finally {
       setScanning(false);
@@ -158,7 +167,7 @@ function Dashboard() {
     <main className="mx-auto min-h-screen max-w-4xl px-6 py-10">
       <header className="flex items-center justify-between">
         <div>
-          <p className="text-sm font-semibold uppercase tracking-widest text-primary">OneDrive for Eclipse</p>
+          <Brand />
           <h1 className="mt-1 text-3xl font-bold">Your library</h1>
         </div>
         {me.user && (
@@ -213,6 +222,16 @@ function Dashboard() {
               </>
             )}
           </div>
+          {scanProgress && <div className="mt-4 space-y-2" role="status" aria-live="polite">
+            <div role="progressbar" aria-label={scanProgress.full ? "Library scan" : "Library sync"} aria-valuemin={0} aria-valuemax={100} aria-valuenow={scanProgress.state === "done" ? 100 : undefined} aria-valuetext={scanProgress.state === "running" ? "In progress; total not yet known" : scanProgress.state} className="h-2 overflow-hidden rounded-full bg-muted">
+              <div className={scanProgress.state === "done" ? "h-full w-full bg-success" : "h-full w-1/3 bg-primary motion-safe:animate-pulse"} />
+            </div>
+            <p className="text-sm text-muted-foreground">
+              {scanProgress.state === "done" ? "Complete" : scanProgress.state === "paused" ? "Paused — click Sync changes to continue" : scanProgress.state === "error" ? "Scan stopped" : scanProgress.full ? "Scanning…" : "Syncing…"}
+              {" · "}{scanProgress.tracks.toLocaleString()} tracks{scanProgress.full ? " indexed" : " in library"}{" · "}{scanProgress.batches} batches checked
+              {!scanProgress.full && <> · {scanProgress.changes.toLocaleString()} changes processed</>}
+            </p>
+          </div>}
           {tracks > 0 && <div className="mt-4 space-y-2">
             <div className="flex flex-wrap gap-2">
               <Button variant="outline" disabled={scanning || readingTags} onClick={() => readTags()}>{readingTags ? "Reading song details…" : "Read song details"}</Button>
@@ -250,7 +269,7 @@ function Dashboard() {
             <li>Open Eclipse Music (app or <a className="text-primary hover:underline" href="https://eclipsemusic.app/web/" target="_blank" rel="noreferrer">web</a>).</li>
             <li>Go to Settings → Connections → Add Connection → Addon.</li>
             <li>Paste your link and tap Install.</li>
-            <li>Pick "My OneDrive Music" in the search dropdown and search for a song.</li>
+            <li>Pick "OneBridge for Eclipse" in the search dropdown and search for a song.</li>
           </ol>
         </section>
       )}

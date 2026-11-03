@@ -39,6 +39,24 @@ function id3() {
 }
 
 describe("embedded song details", () => {
+  it("follows a Microsoft media redirect while preserving ranges and never forwarding credentials", async () => {
+    const bytes = id3();
+    const rangeFetch = serve(bytes);
+    const mock = vi.fn().mockResolvedValueOnce(new Response(null, { status: 302, headers: { location: "https://public.dm.files.1drv.com/song" } })).mockImplementation(rangeFetch);
+    vi.stubGlobal("fetch", mock);
+    const tags = await readEmbeddedTags("https://media.example.test/start", bytes.length, "song.mp3");
+    expect(tags.common.title).toBe("Tagged Song");
+    expect(mock.mock.calls[1]?.[0]).toBe("https://public.dm.files.1drv.com/song");
+    expect(mock.mock.calls[1]?.[1].headers).toEqual({ Range: "bytes=0-4095" });
+    expect(mock.mock.calls[1]?.[1].redirect).toBe("manual");
+  });
+
+  it("rejects redirects outside Microsoft media hosts", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 302, headers: { location: "https://untrusted.example.test/song" } })));
+    const reader = new RangeTokenizer("https://media.example.test/start", 100, "song.mp3");
+    await expect(reader.readBuffer(new Uint8Array(10))).rejects.toThrow("approved Microsoft HTTPS");
+    await reader.close();
+  });
   it("never exposes signed URLs or arbitrary parser messages in diagnostics", () => {
     expect(tagFailure(new Error("fetch failed https://private.test/?token=secret"))).toBe("Music download request failed or redirected");
     expect(tagFailure(new Error("unexpected private account data"))).toBe("Tag parser could not read this file");

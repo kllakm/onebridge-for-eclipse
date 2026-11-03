@@ -24,6 +24,7 @@
 - [x] Answer TorBox database-storage feasibility as research only; no TorBox implementation changes.
 
 # OneBridge testing update
+- [x] Replace placeholder README with local branding, prominent donation links, usage, self-hosting requirements and fork/scale guidance; keep testing signup closure explicit.
 - [x] Move main-page donation section directly beneath login; verified visible without desktop scrolling.
 - [x] Clarify existing-row cleanup and distinguish implemented small savings from proposed shared album/artist storage.
 - [x] Apply supplied OneBridge branding and favicon without changing playback.

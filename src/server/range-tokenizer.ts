@@ -4,6 +4,17 @@ export const TAG_BYTE_LIMIT = 512 * 1024;
 export const TAG_REQUEST_LIMIT = 8;
 const CHUNK_SIZE = 64 * 1024;
 
+export class TagDownloadError extends Error {}
+
+function mediaUrl(value: string, base?: string) {
+  const url = new URL(value, base);
+  const domains = ["1drv.com", "live.com", "sharepoint.com", "onedrive.com", "microsoftusercontent.com"];
+  if (url.protocol !== "https:" || url.username || url.password || !domains.some((domain) => url.hostname === domain || url.hostname.endsWith(`.${domain}`))) {
+    throw new TagDownloadError("Music host redirect was not an approved Microsoft HTTPS address");
+  }
+  return url.href;
+}
+
 /** Random-access metadata reads; skipping audio payloads never fetches them. */
 export class RangeTokenizer extends AbstractTokenizer {
   fileInfo: { size: number; path: string };
@@ -56,16 +67,31 @@ export class RangeTokenizer extends AbstractTokenizer {
     const end = Math.min(start + CHUNK_SIZE, this.fileInfo.size) - 1;
     const length = end - start + 1;
     if (this.requests >= TAG_REQUEST_LIMIT || this.bytes + length > TAG_BYTE_LIMIT) throw new Error("Music tag read budget reached");
-    this.requests++;
-    const response = await fetch(this.url, {
-      headers: { Range: `bytes=${start}-${end}` },
-      redirect: "error",
-      signal: this.controller.signal,
-    });
+    let response: Response;
+    let redirects = 0;
+    while (true) {
+      if (this.requests >= TAG_REQUEST_LIMIT) throw new Error("Music tag read budget reached");
+      this.requests++;
+      try {
+        response = await fetch(this.url, {
+          headers: { Range: `bytes=${start}-${end}` },
+          redirect: "manual",
+          signal: this.controller.signal,
+        });
+      } catch {
+        throw new TagDownloadError(this.controller.signal.aborted ? "Music download timed out" : "Music host connection failed before returning a response");
+      }
+      if (![301, 302, 303, 307, 308].includes(response.status)) break;
+      const location = response.headers.get("location");
+      if (response.body) await response.body.cancel();
+      if (!location || redirects >= 2) throw new TagDownloadError("Music host returned too many redirects or no redirect address");
+      this.url = mediaUrl(location, this.url);
+      redirects++;
+    }
     const range = response.headers.get("content-range");
     if (response.status !== 206 || range !== `bytes ${start}-${end}/${this.fileInfo.size}` || !response.body) {
       if (response.body) await response.body.cancel();
-      throw new Error("Music host did not return the requested byte range");
+      throw new TagDownloadError(`Music host did not return the requested byte range (HTTP ${response.status})`);
     }
     const reader = response.body.getReader();
     const result = new Uint8Array(length);

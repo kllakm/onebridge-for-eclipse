@@ -1,5 +1,5 @@
 import { parseFromTokenizer, type IAudioMetadata } from "music-metadata";
-import { RangeTokenizer } from "./range-tokenizer";
+import { RangeTokenizer, TagDownloadError } from "./range-tokenizer";
 import { keyOf, type TrackRow } from "./library";
 import type { AppEnv, D1 } from "./env";
 import { downloadUrl } from "./graph";
@@ -7,6 +7,7 @@ import { HttpError } from "./http";
 
 export function tagFailure(error: unknown): string {
   const message = error instanceof Error ? error.message : "";
+  if (error instanceof TagDownloadError) return error.message;
   if (error instanceof HttpError) return `OneDrive request failed (${error.status})`;
   if (message.includes("requested byte range")) return "Music host rejected the requested byte range";
   if (message.includes("budget") || message.includes("Buffer size")) return "Tags exceed the safe read limit";

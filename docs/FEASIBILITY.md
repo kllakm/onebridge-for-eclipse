@@ -53,3 +53,11 @@ See docs/TEST-CHECKLIST.md. Nothing in sections 2–3 marked unverified should b
 - Added a fallback to Graph `/me/drive/items/{id}/content`, reading its 302 Location with manual redirect handling. The server does not follow the redirect or proxy audio. Automated tests cover annotation success, missing-annotation fallback, owner-scoped token lookup and missing-file errors.
 - **Unverified:** successful playback with this fallback on the deployed Worker, audio-host CORS and seeking. Requires retry after deployment.
 - Owner reports filename-only metadata despite embedded tags. The scanner relies on Graph's audio facet, not embedded-tag extraction. Microsoft documents this facet as OneDrive Personal only; metadata recovery remains unresolved.
+- Owner subsequently confirmed files play in Eclipse Web with the fallback. Skipping songs has a reported 5–6 second delay; immediate stopping is controlled by Eclipse. Seeking and other platforms remain unverified.
+
+## 10. Embedded metadata enrichment
+- Added a separate **Read song details** action for existing indexed files; no full rescan or new addon link is required. It resumes pending rows after interruption and displays checked/tagged/unavailable counts.
+- Apply `migrations/0002_metadata.sql` in the owner's D1 console before using it. Existing rows are pending; ordinary delta replacements requeue changed files. No Microsoft permissions or secrets change.
+- The music-metadata parser reads bounded HTTP ranges: at most 8 requests / 512 KiB per file, 64 KiB per range, three files per request. Full-file responses are rejected and cancelled. Artwork is skipped, and scanning audio to calculate duration is disabled.
+- Tags update title, artist, album, album artist, track/disc, genre, year and available duration. Filename values are preserved when fields are absent; failed or over-budget files are marked unavailable instead of endlessly retried. Full rescan requeues those files if needed.
+- **Unverified:** actual OneDrive range behavior and metadata recovery after deployment; unusually large tags or unsupported layouts can exceed the budget. Artwork extraction is not included.

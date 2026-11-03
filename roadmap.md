@@ -15,6 +15,7 @@
 - [ ] Apply storage migration and measure deployed scan speed/size — requires owner's Cloudflare access and deployment.
 
 # OneBridge testing update
+- [ ] Move main-page donation section directly beneath login and explain applying storage cleanup to existing rows.
 - [x] Apply supplied OneBridge branding and favicon without changing playback.
 - [x] Block new signups while preserving existing sign-in.
 - [x] Show clear progress during sync changes and full rescan.

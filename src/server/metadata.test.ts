@@ -3,6 +3,7 @@ import { readEmbeddedTags, mergeTags, metadataStep, tagFailure } from "./metadat
 import { RangeTokenizer, TAG_BYTE_LIMIT, TAG_REQUEST_LIMIT, TAG_TIMEOUT_MS } from "./range-tokenizer";
 import { itemToTrack } from "./library";
 import type { D1, D1Stmt } from "./env";
+import { encryptString } from "./crypto";
 
 afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
@@ -176,5 +177,49 @@ describe("embedded song details", () => {
     await metadataStep({}, db, "owner-a", false, true);
     expect(db.prepare).toHaveBeenCalledWith("UPDATE music_files SET tag_status='pending' WHERE user_id=? AND tag_status='unavailable'");
     expect(bind.mock.calls).toEqual([["owner-a"], ["owner-a"], ["owner-a"]]);
+  });
+
+  it("reads three owner tracks concurrently with one connection lookup and writes recovered tags", async () => {
+    const bytes = withLargeCover(3);
+    const ranges = serve(bytes);
+    let active = 0;
+    let peak = 0;
+    vi.stubGlobal("fetch", vi.fn(async (url: string, init: RequestInit) => {
+      if (!url.includes("graph.microsoft.com")) return ranges(url, init);
+      active++;
+      peak = Math.max(peak, active);
+      await Promise.resolve();
+      active--;
+      return new Response(null, { status: 302, headers: { location: "https://public.dm.files.1drv.com/song" } });
+    }));
+    const key = btoa(String.fromCharCode(...new Uint8Array(32).fill(9)));
+    const encrypted = await encryptString("test-token", key);
+    const rows = ["one", "two", "three"].map((id) => itemToTrack({ id, name: "song.mp3", size: bytes.length, file: {} }));
+    const writes: unknown[][] = [];
+    let lookups = 0;
+    const db: D1 = { batch: vi.fn(), prepare: vi.fn((query: string) => {
+      let values: unknown[] = [];
+      const stmt: D1Stmt = {
+        bind: (...args) => { values = args; return stmt; },
+        all: async () => ({ results: rows }) as never,
+        first: async () => {
+          if (query.includes("microsoft_connections")) {
+            lookups++;
+            expect(values).toEqual(["owner-a"]);
+            return { access_token_enc: encrypted, refresh_token_enc: "unused", expires_at: Date.now() + 600_000 } as never;
+          }
+          return { total: 3, processed: writes.length, tagged: writes.length, unavailable: 0 } as never;
+        },
+        run: async () => { writes.push(values); },
+      };
+      return stmt;
+    }) };
+    const result = await metadataStep({ MS_CLIENT_ID: "test", MS_CLIENT_SECRET: "test", TOKEN_ENC_KEY: key }, db, "owner-a");
+    expect(result).toMatchObject({ done: true, tagged: 3, unavailable: 0, issues: [] });
+    expect(peak).toBe(3);
+    expect(lookups).toBe(1);
+    expect(writes).toHaveLength(3);
+    expect(writes.every((values) => values[0] === "Tagged Song" && values[11] === "complete" && values[12] === "owner-a")).toBe(true);
+    expect(writes.map((values) => values[13]).sort()).toEqual(["one", "three", "two"]);
   });
 });

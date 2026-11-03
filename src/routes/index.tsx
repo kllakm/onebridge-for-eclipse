@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Brand } from "@/components/Brand";
 import { SetupNotice } from "@/components/SetupNotice";
+import { SupportCoffee } from "@/components/SupportCoffee";
 import { api, type MeResponse } from "@/lib/api";
 
 export const Route = createFileRoute("/")({
@@ -119,6 +120,8 @@ function Index() {
           </div>
         </div>
       </section>
+
+      <SupportCoffee className="mx-auto max-w-6xl" />
     </main>
   );
 }

@@ -15,9 +15,9 @@
 - [ ] Apply latest storage migration and measure deployed scan speed/size — requires owner's Cloudflare access and deployment.
 
 # Compact shared library
-- [ ] Replace repeated artist/album names with owner-scoped shared records and compact integer references; reset only music index.
-- [ ] Update scan, metadata writes and cleanup while preserving Eclipse read responses and stable IDs.
-- [ ] Test actual SQLite read/write flows, ownership, reset, deduplication and representative size; document migration/rescan steps.
+- [x] Replace repeated artist/album names with owner-scoped shared records and compact integer references; reset only music index.
+- [x] Update scan, metadata writes and cleanup while preserving Eclipse read responses and stable IDs.
+- [x] Test actual SQLite read/write flows, ownership, reset, deduplication and representative size; document migration/rescan steps.
 - [x] Answer TorBox database-storage feasibility as research only; no TorBox implementation changes.
 
 # OneBridge testing update

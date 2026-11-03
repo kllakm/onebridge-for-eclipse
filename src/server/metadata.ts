@@ -6,6 +6,7 @@ import { metadataDownloader } from "./graph";
 import { readSelectiveMp3Tags } from "./mp3-tags";
 import { HttpError } from "./http";
 import { pruneLibrary } from "./compact-library";
+import { libraryProgress } from "./library-progress";
 
 export function tagFailure(error: unknown): string {
   const message = error instanceof Error ? error.message : "";
@@ -83,13 +84,7 @@ export async function metadataStep(env: AppEnv, db: D1, userId: string, diagnose
         .bind(userId, row.item_id).run();
     }
   }));
-  const counts = await db.prepare(`SELECT COUNT(*) AS total,
-    SUM(CASE WHEN tag_status!=0 THEN 1 ELSE 0 END) AS processed,
-    SUM(CASE WHEN tag_status=1 THEN 1 ELSE 0 END) AS tagged,
-    SUM(CASE WHEN tag_status=2 THEN 1 ELSE 0 END) AS unavailable
-    FROM music_tracks WHERE user_id=?`).bind(userId).first<{ total: number; processed: number; tagged: number; unavailable: number }>();
-  const total = counts?.total ?? 0;
-  const processed = counts?.processed ?? 0;
-  if (rows.results.length && total === processed) await pruneLibrary(db, userId);
-  return { done: total === processed, total, processed, tagged: counts?.tagged ?? 0, unavailable: counts?.unavailable ?? 0, issues };
+  const progress = await libraryProgress(db, userId);
+  if (rows.results.length && progress.done) await pruneLibrary(db, userId);
+  return { ...progress, issues };
 }

@@ -46,6 +46,7 @@ function Stat({ label, value }: { label: string; value: string | number }) {
 function Dashboard() {
   const navigate = useNavigate();
   const [me, setMe] = useState<MeResponse | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [scanning, setScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState<{ tracks: number; changes: number; batches: number; state: "running" | "done" | "paused" | "error"; full: boolean } | null>(null);
   const [folder, setFolder] = useState("");
@@ -56,7 +57,14 @@ function Dashboard() {
   const [tagProgress, setTagProgress] = useState<{ processed: number; total: number; tagged: number; unavailable: number; done: boolean } | null>(null);
 
   const load = useCallback(async () => {
-    const m = await api<MeResponse>("/api/me");
+    let m: MeResponse;
+    try {
+      m = await api<MeResponse>("/api/me");
+      setLoadError(null);
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Your library could not be loaded.");
+      return;
+    }
     if (!m.user && m.configured.database) {
       navigate({ to: "/" });
       return;
@@ -66,7 +74,7 @@ function Dashboard() {
   }, [navigate]);
 
   useEffect(() => {
-    load().catch(() => {});
+    void load();
     const params = new URLSearchParams(window.location.search);
     const msg = params.get("onedrive");
     if (msg && ONEDRIVE_MSG[msg]) {
@@ -162,7 +170,10 @@ function Dashboard() {
     navigate({ to: "/" });
   }
 
-  if (!me) return <main className="grid min-h-screen place-items-center text-muted-foreground">Loading…</main>;
+  if (!me) return <main className="mx-auto flex min-h-screen max-w-xl flex-col justify-center gap-4 px-6">
+    <Brand />
+    {loadError ? <><h1 className="text-2xl font-semibold">Library unavailable</h1><p role="alert" className="text-destructive">{loadError}</p><Button className="self-start" onClick={() => { void load(); }}>Try again</Button></> : <p className="text-muted-foreground">Loading…</p>}
+  </main>;
 
   const tracks = me.sync?.track_count ?? 0;
 
@@ -182,6 +193,7 @@ function Dashboard() {
       </header>
 
       <div className="mt-6"><SetupNotice configured={me.configured} /></div>
+      {loadError && <p role="alert" className="mt-6 text-sm text-destructive">{loadError}</p>}
       {connectionError && <p role="alert" className="mt-6 rounded-lg border border-destructive bg-card p-4 text-sm text-destructive">{connectionError}</p>}
 
       <section className="mt-8 rounded-2xl border border-border bg-card p-6">

@@ -167,6 +167,8 @@ describe("embedded song details", () => {
     expect(await metadataStep({}, db, "owner-a")).toMatchObject({ done: true, total: 0 });
     expect(bind.mock.calls).toEqual([["owner-a", "owner-a"], ["owner-a"]]);
     expect(db.prepare).toHaveBeenCalledWith(expect.stringContaining("WHERE user_id=? AND tag_status=0"));
+    expect(db.prepare).toHaveBeenCalledWith("SELECT total,tagged,unavailable FROM library_progress WHERE user_id=?");
+    expect((db.prepare as ReturnType<typeof vi.fn>).mock.calls.some(([sql]) => /COUNT\(|SUM\(/.test(sql))).toBe(false);
   });
 
   it("requeues only the owner's unavailable files, without resetting completed files", async () => {

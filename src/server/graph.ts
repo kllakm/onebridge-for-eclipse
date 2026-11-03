@@ -221,7 +221,7 @@ export async function scanStep(env: AppEnv, db: D1, userId: string, opts: { full
     }
   }
   if (done || opts.full) await pruneLibrary(db, userId);
-  const count = await db.prepare("SELECT COUNT(*) AS n FROM music_tracks WHERE user_id=?").bind(userId).first<{ n: number }>();
+  const count = await db.prepare("SELECT total AS n FROM library_progress WHERE user_id=?").bind(userId).first<{ n: number }>();
   await db.prepare("UPDATE sync_state SET track_count=? WHERE user_id=?").bind(count?.n ?? 0, userId).run();
   return { done, changed, trackCount: count?.n ?? 0 };
 }

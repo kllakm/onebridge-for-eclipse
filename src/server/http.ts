@@ -33,6 +33,13 @@ export async function safe(fn: () => Promise<Response>, extraHeaders: Record<str
   } catch (e) {
     if (e instanceof ConfigError) return json({ error: e.message }, 503, extraHeaders);
     if (e instanceof HttpError) return json({ error: e.message }, e.status, extraHeaders);
+    const message = e instanceof Error ? e.message : "";
+    if (/no such (table|column)|has no column named|cannot modify .* because it is a view/i.test(message)) {
+      return json({ error: "The database upgrade is incomplete. Stop scanning and follow the database recovery section in the deployment guide. Do not rerun the reset migration or delete your database." }, 503, extraHeaders);
+    }
+    if (/D1.*(limit|quota).*exceed|daily.*(limit|quota).*exceed/i.test(message)) {
+      return json({ error: "Cloudflare's daily database allowance has been exhausted. Wait for the allowance to reset before trying again." }, 503, extraHeaders);
+    }
     console.error("handler error:", e instanceof Error ? e.message : "unknown");
     return json({ error: "Internal error" }, 500, extraHeaders);
   }

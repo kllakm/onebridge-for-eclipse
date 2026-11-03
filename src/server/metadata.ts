@@ -5,6 +5,7 @@ import type { AppEnv, D1 } from "./env";
 import { metadataDownloader } from "./graph";
 import { readSelectiveMp3Tags } from "./mp3-tags";
 import { HttpError } from "./http";
+import { pruneLibrary } from "./compact-library";
 
 export function tagFailure(error: unknown): string {
   const message = error instanceof Error ? error.message : "";
@@ -55,11 +56,11 @@ export async function readEmbeddedTags(url: string, size: number, name: string) 
 /** Three files per request keeps range and Graph calls within the Free Worker budget. */
 export async function metadataStep(env: AppEnv, db: D1, userId: string, diagnose = false, retryFailed = false) {
   const issues: string[] = [];
-  if (retryFailed && !diagnose) await db.prepare("UPDATE music_files SET tag_status='pending' WHERE user_id=? AND tag_status='unavailable'").bind(userId).run();
+  if (retryFailed && !diagnose) await db.prepare("UPDATE music_tracks SET tag_status=0 WHERE user_id=? AND tag_status=2").bind(userId).run();
   const rows = await db.prepare(diagnose
-    ? "SELECT * FROM music_files WHERE user_id=? AND tag_status='unavailable' ORDER BY item_id LIMIT 1"
-    : "SELECT * FROM music_files WHERE user_id=? AND tag_status='pending' ORDER BY item_id LIMIT 3")
-    .bind(userId).all<TrackRow>();
+    ? "SELECT * FROM music_files WHERE user_id=? AND item_id IN (SELECT item_id FROM music_tracks WHERE user_id=? AND tag_status=2 ORDER BY item_id LIMIT 1) ORDER BY item_id"
+    : "SELECT * FROM music_files WHERE user_id=? AND item_id IN (SELECT item_id FROM music_tracks WHERE user_id=? AND tag_status=0 ORDER BY item_id LIMIT 3) ORDER BY item_id")
+    .bind(userId, userId).all<TrackRow>();
   const downloader = rows.results.length ? await metadataDownloader(env, db, userId) : null;
   await Promise.all(rows.results.map(async (row) => {
     if (!downloader) return;
@@ -78,16 +79,17 @@ export async function metadataStep(env: AppEnv, db: D1, userId: string, diagnose
     } catch (error) {
       issues.push(`${row.ext.toUpperCase()} · ${stage}: ${tagFailure(error)}`);
       // Never log the signed download URL or parser errors that may contain it.
-      if (!diagnose) await db.prepare("UPDATE music_files SET tag_status='unavailable' WHERE user_id=? AND item_id=?")
+      if (!diagnose) await db.prepare("UPDATE music_tracks SET tag_status=2 WHERE user_id=? AND item_id=?")
         .bind(userId, row.item_id).run();
     }
   }));
   const counts = await db.prepare(`SELECT COUNT(*) AS total,
-    SUM(CASE WHEN tag_status!='pending' THEN 1 ELSE 0 END) AS processed,
-    SUM(CASE WHEN tag_status='complete' THEN 1 ELSE 0 END) AS tagged,
-    SUM(CASE WHEN tag_status='unavailable' THEN 1 ELSE 0 END) AS unavailable
-    FROM music_files WHERE user_id=?`).bind(userId).first<{ total: number; processed: number; tagged: number; unavailable: number }>();
+    SUM(CASE WHEN tag_status!=0 THEN 1 ELSE 0 END) AS processed,
+    SUM(CASE WHEN tag_status=1 THEN 1 ELSE 0 END) AS tagged,
+    SUM(CASE WHEN tag_status=2 THEN 1 ELSE 0 END) AS unavailable
+    FROM music_tracks WHERE user_id=?`).bind(userId).first<{ total: number; processed: number; tagged: number; unavailable: number }>();
   const total = counts?.total ?? 0;
   const processed = counts?.processed ?? 0;
+  if (rows.results.length && total === processed) await pruneLibrary(db, userId);
   return { done: total === processed, total, processed, tagged: counts?.tagged ?? 0, unavailable: counts?.unavailable ?? 0, issues };
 }

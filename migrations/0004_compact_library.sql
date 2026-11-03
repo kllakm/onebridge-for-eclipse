@@ -65,8 +65,9 @@ JOIN library_artists aa ON aa.user_id=al.user_id AND aa.id=al.album_artist_id;
 
 -- Preserve existing batched scan/tag writers; references are resolved only within NEW.user_id.
 CREATE TRIGGER music_files_insert INSTEAD OF INSERT ON music_files BEGIN
-  INSERT OR IGNORE INTO library_artists(user_id,id,name,artist_key)
-    SELECT NEW.user_id,COALESCE(MAX(id),0)+1,NEW.artist,NEW.artist_key FROM library_artists WHERE user_id=NEW.user_id;
+  INSERT INTO library_artists(user_id,id,name,artist_key)
+    SELECT NEW.user_id,COALESCE(MAX(id),0)+1,NEW.artist,NEW.artist_key FROM library_artists WHERE user_id=NEW.user_id
+    ON CONFLICT(user_id,name) DO UPDATE SET artist_key=excluded.artist_key;
   INSERT OR IGNORE INTO library_artists(user_id,id,name,artist_key)
     SELECT NEW.user_id,COALESCE(MAX(id),0)+1,COALESCE(NEW.album_artist,NEW.artist),
       CASE WHEN COALESCE(NEW.album_artist,NEW.artist)=NEW.artist THEN NEW.artist_key ELSE 'ar-'||COALESCE(NEW.album_artist,NEW.artist) END
@@ -89,8 +90,9 @@ END;
 
 CREATE TRIGGER music_files_update INSTEAD OF UPDATE ON music_files
 WHEN NEW.user_id=OLD.user_id AND NEW.item_id=OLD.item_id BEGIN
-  INSERT OR IGNORE INTO library_artists(user_id,id,name,artist_key)
-    SELECT NEW.user_id,COALESCE(MAX(id),0)+1,NEW.artist,NEW.artist_key FROM library_artists WHERE user_id=NEW.user_id;
+  INSERT INTO library_artists(user_id,id,name,artist_key)
+    SELECT NEW.user_id,COALESCE(MAX(id),0)+1,NEW.artist,NEW.artist_key FROM library_artists WHERE user_id=NEW.user_id
+    ON CONFLICT(user_id,name) DO UPDATE SET artist_key=excluded.artist_key;
   INSERT OR IGNORE INTO library_artists(user_id,id,name,artist_key)
     SELECT NEW.user_id,COALESCE(MAX(id),0)+1,COALESCE(NEW.album_artist,NEW.artist),
       CASE WHEN COALESCE(NEW.album_artist,NEW.artist)=NEW.artist THEN NEW.artist_key ELSE 'ar-'||COALESCE(NEW.album_artist,NEW.artist) END

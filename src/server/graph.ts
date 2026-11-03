@@ -4,6 +4,7 @@ import { ConfigError } from "./env";
 import { decryptString, encryptString } from "./crypto";
 import { HttpError } from "./http";
 import { itemToTrack, type DriveItem } from "./library";
+import { pruneLibrary } from "./compact-library";
 
 export const MS_SCOPES = "openid email offline_access User.Read Files.Read";
 const GRAPH = "https://graph.microsoft.com/v1.0";
@@ -199,7 +200,7 @@ export async function scanStep(env: AppEnv, db: D1, userId: string, opts: { full
       stmts.push(
         db
           .prepare(
-            `INSERT OR REPLACE INTO music_files (user_id, item_id, name, path, size, ext, mime, title, artist, album, album_artist,
+            `INSERT INTO music_files (user_id, item_id, name, path, size, ext, mime, title, artist, album, album_artist,
              artist_key, album_key, track_no, disc_no, genre, year, duration, modified_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`,
           )
           .bind(userId, t.item_id, t.name, t.path, t.size, t.ext, t.mime, t.title, t.artist, t.album, t.album_artist,
@@ -217,7 +218,8 @@ export async function scanStep(env: AppEnv, db: D1, userId: string, opts: { full
       break;
     }
   }
-  const count = await db.prepare("SELECT COUNT(*) AS n FROM music_files WHERE user_id=?").bind(userId).first<{ n: number }>();
+  if (done || opts.full) await pruneLibrary(db, userId);
+  const count = await db.prepare("SELECT COUNT(*) AS n FROM music_tracks WHERE user_id=?").bind(userId).first<{ n: number }>();
   await db.prepare("UPDATE sync_state SET track_count=? WHERE user_id=?").bind(count?.n ?? 0, userId).run();
   return { done, changed, trackCount: count?.n ?? 0 };
 }

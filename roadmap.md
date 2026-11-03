@@ -1,3 +1,10 @@
+# Public GitHub release preparation
+- [x] Add complete PolyForm Noncommercial text, explicit supplemental restrictions and attribution terms.
+- [x] Update README for community self-hosting, licensing and required credentials.
+- [x] Add persistent creator attribution and actual TanStack entry-file copyright notices; routing/signup tests pass.
+- [x] Add placeholder environment example, audit current source and verify desktop/mobile attribution.
+- [ ] Add general .env/local-secret exclusions — blocked by externally managed read-only .gitignore; current .dev.vars exclusion and README warning retained.
+
 # Missing music metadata
 - [x] Replace per-batch full-library progress counts with transactional owner counters; test retries, deletion and isolation.
 - [x] Surface dashboard load failures and document safe incomplete-migration diagnosis.

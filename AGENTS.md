@@ -10,6 +10,7 @@
 <!-- LOVABLE:END -->
 
 ## Architecture rules
+- Mount creator attribution in the root document shell outside leaf pages, so sign-in, dashboard and error/not-found views retain credit without duplicating page components.
 - Keep the shared Vite configuration dependency: it supplies the framework plugins and Cloudflare build integration; removing it breaks deployment.
 - Root error handling uses the existing console logger and recovery UI without optional editor telemetry, so independent deployments do not need editor hooks.
 - Library scan/tag progress is stored in owner-keyed counters maintained by transactional track triggers; read one counter row per batch instead of scanning the library, so retries, deletes and concurrent writes remain accurate.

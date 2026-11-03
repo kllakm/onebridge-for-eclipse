@@ -1,3 +1,6 @@
+/* Copyright (c) 2026 kllakm — OneBridge for Eclipse.
+ * PolyForm Noncommercial 1.0.0 with additional OneBridge conditions; see LICENSE.md.
+ */
 import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/react-start";
 
 import { renderErrorPage } from "./lib/error-page";

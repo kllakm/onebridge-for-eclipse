@@ -1,3 +1,7 @@
+/* Copyright (c) 2026 kllakm — OneBridge for Eclipse.
+ * PolyForm Noncommercial 1.0.0 with additional OneBridge conditions; see LICENSE.md.
+ * Required Notice: Copyright (c) 2026 kllakm — OneBridge for Eclipse — https://github.com/kllakm/onebridge-for-eclipse
+ */
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
@@ -10,6 +14,7 @@ import {
 } from "@tanstack/react-router";
 import { type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { CreatorAttribution } from "@/components/CreatorAttribution";
 
 import appCss from "../styles.css?url";
 
@@ -107,7 +112,10 @@ function RootShell({ children }: { children: ReactNode }) {
         <HeadContent />
       </head>
       <body>
-        {children}
+        <div className="flex min-h-screen flex-col">
+          <div className="flex-1">{children}</div>
+          <CreatorAttribution />
+        </div>
         <Scripts />
       </body>
     </html>

@@ -1,3 +1,6 @@
+/* Copyright (c) 2026 kllakm — OneBridge for Eclipse.
+ * PolyForm Noncommercial 1.0.0 with additional OneBridge conditions; see LICENSE.md.
+ */
 import "./lib/error-capture";
 import { setRequestEnv } from "./server/env";
 

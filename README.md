@@ -20,6 +20,32 @@ OneBridge connects a user's Microsoft OneDrive music library to [Eclipse Music](
 
 **Status: testing-stage project, not a turnkey large-scale service.** New account registration is deliberately disabled in both the interface and the server. Existing testing accounts can sign in. A fresh deployment does **not** include an account or a working signup flow; see the account-access requirement below before deploying.
 
+## License & Attribution
+
+**Copyright (c) 2026 kllakm. Free community use; no commercial use or monetized access.** This project is source-available under **PolyForm Noncommercial License 1.0.0 with additional OneBridge conditions**. Read [LICENSE.md](LICENSE.md). It is not an unrestricted or OSI-approved open-source license.
+
+- Fork, modify, self-host and expand for personal, hobbyist and free community purposes within the terms.
+- Do not sell it, bundle it into paid products, put it behind paywalls or charge for hosted access, including through mandatory donations.
+- Retain **kllakm / OneBridge for Eclipse** credits in source and the readable creator link on deployed main pages: **OneBridge for Eclipse • Created by kllakm (Free & Non-Commercial)**.
+- PolyForm alone does not mandate visible UI credits; the additional OneBridge conditions explicitly require them and the strict no-paid-access rules.
+- Voluntary donations remain optional, must not buy access or functionality, and do not authorize commercial operation. Dependencies/assets keep their own licenses.
+
+Original project: [kllakm/onebridge-for-eclipse](https://github.com/kllakm/onebridge-for-eclipse).
+
+## Why Self-Hosted / Community-Driven?
+
+OneBridge's core bridge has been exercised with OneDrive and Eclipse, but a global instance pools everyone's database, hosting, API and operational upkeep under one operator. Large-scale resource costs can become substantial; unlimited users and zero hosting cost are not promised. Audio streams directly from OneDrive, so OneBridge does not proxy the full music bandwidth, although metadata reads and API responses still consume resources.
+
+The community can run independent, free instances using **their own hosting accounts, Microsoft credentials and keys**, expand the bridge and share improvements under the license. This spreads resource responsibility rather than requiring one global service. Current testing and first-account limitations still apply.
+
+## Self-Hosting & Setup
+
+Use your own Cloudflare Worker + D1 and Microsoft Entra app. The [walkthrough below](#deploy-your-own-instance) and [browser-only guide](docs/DEPLOY.md) cover prerequisites, migrations, secrets and verification.
+
+[.env.example](.env.example) documents placeholder `MS_CLIENT_ID`, `MS_CLIENT_SECRET`, `TOKEN_ENC_KEY`, `APP_URL` and optional `MS_TENANT`. Copying it does **not** provision or bind D1. Set deployed values as Worker Secrets and bind D1 as `DB`. Register the Microsoft Web callback at `APP_URL` + `/api/onedrive/callback`; support organizational and personal accounts with delegated `Files.Read`, `offline_access`, `User.Read`, `openid` and `email` permissions.
+
+Never commit filled-in secrets or database exports. Use ignored `.dev.vars` for local secret values: general `.env` files are not currently excluded by the externally managed `.gitignore`. A fresh instance still needs secure account bootstrap because signup remains closed.
+
 ## What it does
 
 - **Connect OneDrive:** Microsoft authorization with read-only file access; no permission to modify your music.
@@ -160,7 +186,7 @@ With account access properly configured, follow [Using OneBridge](#using-onebrid
 
 **Forks, contributions and independent deployments are welcome.** If you want to expand OneBridge or operate it for a larger audience, start with your own repository and infrastructure, keep the existing security boundaries and test your changes before inviting users.
 
-There is **no LICENSE file in this snapshot**. This invitation is not a replacement for a formal software license; agree and add appropriate licensing terms before broader redistribution or commercial use. Third-party libraries and supplied brand assets may have their own terms.
+All forks and independent deployments must comply with [LICENSE.md](LICENSE.md): **PolyForm Noncommercial 1.0.0 plus additional OneBridge conditions**, including no paid products or hosted access and mandatory kllakm source/UI attribution. Expansion for a larger audience must remain free and noncommercial. Third-party libraries and supplied assets keep their own terms.
 
 Before a large-scale public launch, address at least:
 

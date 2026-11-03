@@ -1,10 +1,10 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { readEmbeddedTags, mergeTags, metadataStep, tagFailure } from "./metadata";
-import { RangeTokenizer, TAG_REQUEST_LIMIT } from "./range-tokenizer";
+import { RangeTokenizer, TAG_REQUEST_LIMIT, TAG_TIMEOUT_MS } from "./range-tokenizer";
 import { itemToTrack } from "./library";
 import type { D1, D1Stmt } from "./env";
 
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => { vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 function serve(bytes: Uint8Array) {
   const mock = vi.fn(async (_url: string, init: RequestInit) => {
@@ -39,6 +39,21 @@ function id3() {
 }
 
 describe("embedded song details", () => {
+  it("allows a slow response beyond fifteen seconds but stops at sixty seconds with a safe diagnostic", async () => {
+    vi.useFakeTimers();
+    const mock = vi.fn((_url: string, init: RequestInit) => new Promise<Response>((_resolve, reject) => {
+      init.signal?.addEventListener("abort", () => reject(new Error("private download address")), { once: true });
+    }));
+    vi.stubGlobal("fetch", mock);
+    const result = readEmbeddedTags("https://media.example.test/song", 4096, "song.mp3");
+    const assertion = expect(result).rejects.toThrow("Music download timed out waiting for response headers");
+    await vi.advanceTimersByTimeAsync(15_000);
+    expect(mock.mock.calls[0]?.[1].signal?.aborted).toBe(false);
+    expect(TAG_TIMEOUT_MS).toBe(60_000);
+    await vi.advanceTimersByTimeAsync(45_000);
+    await assertion;
+    expect(mock).toHaveBeenCalledTimes(1);
+  });
   it("follows a Microsoft media redirect while preserving ranges and never forwarding credentials", async () => {
     const bytes = id3();
     const rangeFetch = serve(bytes);

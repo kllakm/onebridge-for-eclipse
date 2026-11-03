@@ -29,3 +29,8 @@
 - [x] Apply supplied OneBridge branding and favicon without changing playback.
 - [x] Block new signups while preserving existing sign-in.
 - [x] Show clear progress during sync changes and full rescan.
+
+# Future: BYO database via Turso (decided, not started)
+- [ ] Keep accounts, sessions and connections on the owner's D1; move each user's music library and metadata to that user's own Turso database.
+- [ ] Test Turso compatibility of the compact schema (WITHOUT ROWID, INSTEAD OF triggers, partial indexes) before committing.
+- [ ] Design guided dashboard setup: sign up at Turso, paste connection details, connect, auto-create tables.

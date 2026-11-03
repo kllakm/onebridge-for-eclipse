@@ -1,5 +1,6 @@
 // Cloudflare settings for this app. The build merges this into its generated Worker config.
 // Only the database_id needs changing (see docs/DEPLOY.md, step 3). No secrets in this file.
+// Database schema is at 0005 (compact library + progress counters) as of 2026-11-03.
 {
   "name": "eclipse-onedrive",
   "d1_databases": [

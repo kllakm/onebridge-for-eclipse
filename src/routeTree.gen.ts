@@ -21,6 +21,7 @@ import { Route as ApiAuthSignupRouteImport } from './routes/api/auth/signup'
 import { Route as ApiOnedriveCallbackRouteImport } from './routes/api/onedrive/callback'
 import { Route as ApiOnedriveConnectRouteImport } from './routes/api/onedrive/connect'
 import { Route as ApiOnedriveDisconnectRouteImport } from './routes/api/onedrive/disconnect'
+import { Route as ApiOnedriveMetadataRouteImport } from './routes/api/onedrive/metadata'
 import { Route as ApiOnedriveScanRouteImport } from './routes/api/onedrive/scan'
 import { Route as AddonTokenAlbumIdRouteImport } from './routes/addon/$token/album.$id'
 import { Route as AddonTokenArtistIdRouteImport } from './routes/addon/$token/artist.$id'
@@ -87,6 +88,11 @@ const ApiOnedriveDisconnectRoute = ApiOnedriveDisconnectRouteImport.update({
   path: '/api/onedrive/disconnect',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOnedriveMetadataRoute = ApiOnedriveMetadataRouteImport.update({
+  id: '/api/onedrive/metadata',
+  path: '/api/onedrive/metadata',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiOnedriveScanRoute = ApiOnedriveScanRouteImport.update({
   id: '/api/onedrive/scan',
   path: '/api/onedrive/scan',
@@ -121,6 +127,7 @@ export interface FileRoutesByFullPath {
   '/api/onedrive/callback': typeof ApiOnedriveCallbackRoute
   '/api/onedrive/connect': typeof ApiOnedriveConnectRoute
   '/api/onedrive/disconnect': typeof ApiOnedriveDisconnectRoute
+  '/api/onedrive/metadata': typeof ApiOnedriveMetadataRoute
   '/api/onedrive/scan': typeof ApiOnedriveScanRoute
   '/addon/$token/album/$id': typeof AddonTokenAlbumIdRoute
   '/addon/$token/artist/$id': typeof AddonTokenArtistIdRoute
@@ -139,6 +146,7 @@ export interface FileRoutesByTo {
   '/api/onedrive/callback': typeof ApiOnedriveCallbackRoute
   '/api/onedrive/connect': typeof ApiOnedriveConnectRoute
   '/api/onedrive/disconnect': typeof ApiOnedriveDisconnectRoute
+  '/api/onedrive/metadata': typeof ApiOnedriveMetadataRoute
   '/api/onedrive/scan': typeof ApiOnedriveScanRoute
   '/addon/$token/album/$id': typeof AddonTokenAlbumIdRoute
   '/addon/$token/artist/$id': typeof AddonTokenArtistIdRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/api/onedrive/callback': typeof ApiOnedriveCallbackRoute
   '/api/onedrive/connect': typeof ApiOnedriveConnectRoute
   '/api/onedrive/disconnect': typeof ApiOnedriveDisconnectRoute
+  '/api/onedrive/metadata': typeof ApiOnedriveMetadataRoute
   '/api/onedrive/scan': typeof ApiOnedriveScanRoute
   '/addon/$token/album/$id': typeof AddonTokenAlbumIdRoute
   '/addon/$token/artist/$id': typeof AddonTokenArtistIdRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/api/onedrive/callback'
     | '/api/onedrive/connect'
     | '/api/onedrive/disconnect'
+    | '/api/onedrive/metadata'
     | '/api/onedrive/scan'
     | '/addon/$token/album/$id'
     | '/addon/$token/artist/$id'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/api/onedrive/callback'
     | '/api/onedrive/connect'
     | '/api/onedrive/disconnect'
+    | '/api/onedrive/metadata'
     | '/api/onedrive/scan'
     | '/addon/$token/album/$id'
     | '/addon/$token/artist/$id'
@@ -214,6 +225,7 @@ export interface FileRouteTypes {
     | '/api/onedrive/callback'
     | '/api/onedrive/connect'
     | '/api/onedrive/disconnect'
+    | '/api/onedrive/metadata'
     | '/api/onedrive/scan'
     | '/addon/$token/album/$id'
     | '/addon/$token/artist/$id'
@@ -233,6 +245,7 @@ export interface RootRouteChildren {
   ApiOnedriveCallbackRoute: typeof ApiOnedriveCallbackRoute
   ApiOnedriveConnectRoute: typeof ApiOnedriveConnectRoute
   ApiOnedriveDisconnectRoute: typeof ApiOnedriveDisconnectRoute
+  ApiOnedriveMetadataRoute: typeof ApiOnedriveMetadataRoute
   ApiOnedriveScanRoute: typeof ApiOnedriveScanRoute
   AddonTokenAlbumIdRoute: typeof AddonTokenAlbumIdRoute
   AddonTokenArtistIdRoute: typeof AddonTokenArtistIdRoute
@@ -325,6 +338,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiOnedriveDisconnectRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/onedrive/metadata': {
+      id: '/api/onedrive/metadata'
+      path: '/api/onedrive/metadata'
+      fullPath: '/api/onedrive/metadata'
+      preLoaderRoute: typeof ApiOnedriveMetadataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/onedrive/scan': {
       id: '/api/onedrive/scan'
       path: '/api/onedrive/scan'
@@ -369,6 +389,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiOnedriveCallbackRoute: ApiOnedriveCallbackRoute,
   ApiOnedriveConnectRoute: ApiOnedriveConnectRoute,
   ApiOnedriveDisconnectRoute: ApiOnedriveDisconnectRoute,
+  ApiOnedriveMetadataRoute: ApiOnedriveMetadataRoute,
   ApiOnedriveScanRoute: ApiOnedriveScanRoute,
   AddonTokenAlbumIdRoute: AddonTokenAlbumIdRoute,
   AddonTokenArtistIdRoute: AddonTokenArtistIdRoute,

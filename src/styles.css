@@ -47,8 +47,8 @@
   --color-ring: var(--ring);
   --color-ring-offset-background: var(--background);
   --color-success: var(--success);
-  --font-display: var(--font-display);
-  --font-sans: var(--font-body);
+  --font-display: var(--display-font);
+  --font-sans: var(--body-font);
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
   --color-chart-3: var(--chart-3);
@@ -66,8 +66,8 @@
 
 :root {
   --radius: 0.75rem;
-  --font-display: "Sora", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --display-font: "Sora", ui-sans-serif, system-ui, sans-serif;
+  --body-font: "Manrope", ui-sans-serif, system-ui, sans-serif;
   --background: oklch(0.16 0.02 270);
   --foreground: oklch(0.95 0.01 85);
   --card: oklch(0.2 0.022 270);
@@ -112,10 +112,10 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: var(--font-body);
+    font-family: var(--body-font);
   }
   h1, h2, h3 {
-    font-family: var(--font-display);
+    font-family: var(--display-font);
     letter-spacing: -0.02em;
   }
 }

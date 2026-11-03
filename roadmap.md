@@ -11,6 +11,7 @@
 - [ ] Speed tag batches with shared connection lookup and bounded parallel reads; add owner-scoped failed-file retry.
 - [ ] Verify tests and dashboard flow; document external OneDrive speed checks still required.
 - [ ] Review and implement small safe D1 storage savings without a schema overhaul; document unmeasured deployed size and any required migration.
+- [ ] Move displayed logo and donation SVGs to public files for independent Cloudflare hosting; verify images.
 
 # OneBridge testing update
 - [x] Apply supplied OneBridge branding and favicon without changing playback.

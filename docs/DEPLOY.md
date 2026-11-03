@@ -80,6 +80,8 @@ From now on, each change in Lovable goes to GitHub, and Cloudflare rebuilds and 
 
 Only run this once. Running it again gives "table already exists" errors, which are harmless.
 
+For a new installation using the current code, also apply 0002 and 0003, then complete the compact-storage procedure below and the 0005 progress-counter update before opening the dashboard. Never run already-applied migrations again just because the dashboard fails.
+
 ## Step 7 — Register the app with Microsoft
 
 1. Go to https://entra.microsoft.com and sign in with your Microsoft account. A personal Outlook/Hotmail account works.
@@ -120,7 +122,7 @@ Click **Deploy** (or Save) after adding them. Use **Secret** for all four, inclu
 ## Step 9 — Check everything works
 
 1. Open your app address. The yellow "Service not set up yet" box should be **gone**.
-2. Sign up, click **Connect Microsoft OneDrive**, approve on Microsoft's page, and you should land back on your dashboard as "Connected".
+2. Sign in with your existing testing account (new signups are closed), click **Connect Microsoft OneDrive**, approve on Microsoft's page, and you should land back on your dashboard as "Connected".
 3. Put a few songs in a folder called `Music` in your OneDrive, click **Scan library**, then **Create addon link**.
 4. Now work through `docs/TEST-CHECKLIST.md` on Eclipse Android and Eclipse Web, and send me the results.
 
@@ -168,8 +170,39 @@ This is the current required upgrade for the latest app code. It stores artist a
    SELECT name, type FROM sqlite_master WHERE name IN ('music_tracks','library_artists','library_albums','music_files','music_files_insert','music_files_update','music_files_delete');
    ```
    Expected: three tables, one view, three triggers. If a statement fails, stop and send the error; do not restart the migration from its destructive first line or continue scanning with a partial setup.
-7. Reopen your app and sign in with your existing account. It should show zero tracks and remain connected to OneDrive. Click **Scan library**, then **Read song details**. Keep the page open. You do not need a new addon link or Microsoft credentials.
+7. Apply the **0005 progress-counter update** below before reopening your app. Then sign in with your existing account. It should show zero tracks and remain connected to OneDrive. Click **Scan library**, then **Read song details**. Keep the page open. You do not need a new addon link or Microsoft credentials.
 8. In Eclipse, search a tagged song, open its album and artist, and play it. Saved tracks keep the same OneDrive IDs, but cannot resolve until indexed again. Report any search/album/artist/playback issue before sharing access.
 9. After tag reading completes, record D1's size again. Shared-name cleanup runs when scan/tag passes finish. SQLite may retain freed pages for reuse; a lower reported physical file size is not guaranteed. Do not recreate the whole database or run unsupported compaction commands.
 
 The migration has not been applied to your Cloudflare database from this chat. A synthetic local comparison showed a smaller layout; actual savings depend on your library and remain to be measured. Existing partial-update and reset tests verify isolation and stable Eclipse track responses, not the deployed Eclipse session.
+
+## Database recovery — dashboard returns 500 or upgrade incomplete
+
+Do not delete the database or rerun 0004 from its first line. A resource 500 alone does not establish the cause: an incomplete upgrade, exhausted daily quota or another server error can cause failures.
+
+1. Close all scan/tag tabs and stop Eclipse requests. Save a D1 export or recovery point if available. Keep your secrets unchanged.
+2. Open **D1 → your database → Console** and run this read-only inspection:
+   ```sql
+   SELECT name,type FROM sqlite_master
+   WHERE name IN ('users','sessions','microsoft_connections','sync_state','addon_tokens',
+     'music_files','music_tracks','library_artists','library_albums',
+     'music_files_insert','music_files_update','music_files_delete',
+     'library_progress','library_progress_insert','library_progress_update','library_progress_delete')
+   ORDER BY name;
+   ```
+3. Send the result and, if available, the failed request's **Network → Response** text. Never send cookies, credentials, or the private addon URL. The generic browser line "Failed to load resource" is not the underlying error.
+4. If `music_files` is a **table** and none of the compact tables exist, the compact upgrade has not completed. Follow its backup/prerequisite instructions first; do not rescan with the latest code yet.
+5. If compact objects are mixed or missing, stop and get a repair based on this inventory. Do not guess missing statements, rerun destructive steps, or restore an old backup without confirming which account/connection changes it would undo.
+6. If all three compact tables, the `music_files` view and its three triggers exist, **do not run 0004 again**. If the progress table/triggers are absent, use the non-destructive 0005 procedure next.
+7. If all objects exist, check the failed response and **Worker → Logs** for the actual error and confirm the `DB` binding points to this database. If the daily allowance is exhausted, wait for it to reset; schema changes will not fix a quota error.
+
+## 0005 progress-counter update — non-destructive
+
+This removes whole-library recounts from each three-song tag batch and each scan step. It keeps a single small row of counts per owner, maintained atomically when songs are inserted, deleted or change tag status. It adds a counter write for each relevant track change; unchanged status does not trigger a counter update. Actual D1 reads/writes and savings require measurement after deployment.
+
+1. Complete and verify 0004 first. Do not apply 0005 to a partial compact schema.
+2. Stop scanning, tag reading and Eclipse requests. Back up or record a recovery point.
+3. Open **migrations/0005_library_progress.sql → Raw** in GitHub. In D1 Console execute each complete statement in order; paste each entire `CREATE TRIGGER ... END;` block as one submission. The backfill reads existing tracks once and preserves all songs, accounts, connections and addon links. Stop if any statement fails.
+4. Verify `library_progress` is a table and `library_progress_insert`, `library_progress_update`, `library_progress_delete` are triggers using the recovery inspection above. All four are required.
+5. Wait for the current Worker deployment to show Success, refresh and sign in. Try **Read song details**, refresh to interrupt, then resume. Checked/tagged/unavailable counts should remain correct. Test a song in Eclipse as well.
+6. Compare D1 Row Metrics over a known short tag pass before/after with equivalent successful work, separately recording rows read and rows written. Do not treat smaller database storage as proof of reduced daily quota use.

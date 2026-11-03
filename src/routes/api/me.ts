@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getEnv } from "@/server/env";
 import { getSessionUser } from "@/server/auth";
 import { json, safe } from "@/server/http";
+import { libraryProgress } from "@/server/library-progress";
 
 export const Route = createFileRoute("/api/me")({
   server: {
@@ -26,6 +27,7 @@ export const Route = createFileRoute("/api/me")({
             .prepare("SELECT status, last_sync_at, last_error, track_count FROM sync_state WHERE user_id=?")
             .bind(user.id)
             .first();
+          const progress = await libraryProgress(db, user.id);
           const counts = await db
             .prepare("SELECT COUNT(DISTINCT artist_key) AS artists, COUNT(DISTINCT album_key) AS albums FROM music_files WHERE user_id=?")
             .bind(user.id)
@@ -35,7 +37,7 @@ export const Route = createFileRoute("/api/me")({
             user: { email: user.email },
             configured,
             connection: conn ? { email: conn.ms_email, folder: conn.folder_path } : null,
-            sync,
+            sync: sync ? { ...sync, track_count: progress.total } : null,
             counts,
             addonTokenCreatedAt: token?.created_at ?? null,
           });

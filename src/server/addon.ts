@@ -4,9 +4,9 @@ import { CORS, json, safe } from "./http";
 
 export const MANIFEST = {
   id: "app.onedrive-for-eclipse",
-  name: "My OneDrive Music",
+  name: "OneBridge for Eclipse",
   version: "0.1.0",
-  description: "Your personal OneDrive music library",
+  description: "OneBridge connects your personal OneDrive music library to Eclipse",
   resources: ["search", "stream", "catalog"],
   types: ["track", "album", "artist"],
   contentType: "music",

@@ -5,4 +5,9 @@
 - [x] Add safe diagnostics and pause metadata reading on failure.
 - [x] Handle bounded Microsoft media redirects and separate download error diagnostics.
 - [x] Extend the bounded tag-read wait and distinguish header/body timeouts; test cancellation.
-- [ ] Resolve deployed metadata failure — waiting for a one-file retest with the 60-second limit.
+- [x] Resolve deployed metadata failure — owner reports tags now recovering; full-library completion remains unverified.
+
+# OneBridge testing update
+- [x] Apply supplied OneBridge branding and favicon without changing playback.
+- [x] Block new signups while preserving existing sign-in.
+- [x] Show clear progress during sync changes and full rescan.

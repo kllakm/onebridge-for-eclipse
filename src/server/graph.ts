@@ -133,16 +133,28 @@ export async function downloadUrl(env: AppEnv, db: D1, userId: string, itemId: s
   if (url) return url;
   // Some items omit the annotation. /content supplies the same pre-authenticated
   // URL in its redirect; never follow it here or download/proxy the audio bytes.
+  return contentDownloadUrl(token, itemId);
+}
+
+/** Request-local only: resolve/refresh once before concurrent owner-scoped tag reads.
+ * Metadata uses /content first because it works even when the annotation is absent.
+ */
+export async function metadataDownloader(env: AppEnv, db: D1, userId: string) {
+  const token = await accessTokenFor(env, db, userId);
+  return (itemId: string) => contentDownloadUrl(token, itemId);
+}
+
+async function contentDownloadUrl(token: string, itemId: string) {
   const response = await fetch(`${GRAPH}/me/drive/items/${encodeURIComponent(itemId)}/content`, {
     headers: { Authorization: `Bearer ${token}` },
     redirect: "manual",
   });
   const location = response.headers.get("location");
+  if (response.body) await response.body.cancel();
   if (response.status === 302 && location) {
     const target = new URL(location);
     if (target.protocol === "https:" && !target.username && !target.password) return target.href;
   }
-  if (response.body) await response.body.cancel();
   throw new HttpError(response.status === 404 ? 404 : 502, `OneDrive did not provide a download redirect (${response.status})`);
 }
 

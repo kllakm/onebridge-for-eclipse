@@ -24,7 +24,7 @@ export class RangeTokenizer extends AbstractTokenizer {
   private bytes = 0;
   private controller = new AbortController();
 
-  constructor(private url: string, size: number, name: string) {
+  constructor(private url: string, size: number, name: string, private chunkSize = CHUNK_SIZE) {
     super({ maxBufferSize: TAG_BYTE_LIMIT });
     if (!Number.isSafeInteger(size) || size <= 0) throw new Error("Unknown music file size");
     this.fileInfo = { size, path: name };
@@ -51,7 +51,7 @@ export class RangeTokenizer extends AbstractTokenizer {
     let copied = 0;
     while (copied < length) {
       const position = o.position + copied;
-      const start = Math.floor(position / CHUNK_SIZE) * CHUNK_SIZE;
+      const start = Math.floor(position / this.chunkSize) * this.chunkSize;
       const chunk = await this.chunk(start);
       const offset = position - start;
       const n = Math.min(length - copied, chunk.length - offset);
@@ -65,7 +65,7 @@ export class RangeTokenizer extends AbstractTokenizer {
   private async chunk(start: number) {
     const cached = this.chunks.get(start);
     if (cached) return cached;
-    const end = Math.min(start + CHUNK_SIZE, this.fileInfo.size) - 1;
+    const end = Math.min(start + this.chunkSize, this.fileInfo.size) - 1;
     const length = end - start + 1;
     if (this.requests >= TAG_REQUEST_LIMIT || this.bytes + length > TAG_BYTE_LIMIT) throw new Error("Music tag read budget reached");
     let response: Response;
